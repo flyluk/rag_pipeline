@@ -1,0 +1,65 @@
+# run Open-WebUI
+#docker run -d -p 3000:8080 --gpus all --add-host=host.docker.internal:host-gateway -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:cuda
+# run Ollama
+#docker run -d --gpus=all -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama
+
+services:
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:cuda
+    ports:
+      - "3000:8080"
+    volumes:
+      - "open-webui:/app/backend/data"
+    environment:
+      - gpus=all
+      - OPENWEATHER_API_KEY=bab87f014e91b33605cf8c69dc3db86d
+    networks:
+      - deepseek
+    hostname: open-webui
+    restart: unless-stopped   
+
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - "ollama:/root/.ollama"
+    ports:
+      - "11434:11434"
+    environment:
+      - gpus=all
+    networks:
+      - deepseek
+    hostname: ollama
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]    
+
+  development:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev   # Ensure you have a Dockerfile.dev at the root of your project.
+    volumes:
+      - .:/workspace   # Mounts your working directory inside the container.
+      - /mnt/c/Users/flyluk/Downloads:/workfiles
+    ports:
+      - "8000:8000"   # Adjust or add additional ports as needed.
+    environment:
+      - ENV=development
+    networks:
+      - deepseek
+    hostname: development
+    restart: unless-stopped
+
+networks:
+  deepseek:
+    driver: bridge
+
+volumes:
+  open-webui:
+    external: true
+  ollama:
+    external: true

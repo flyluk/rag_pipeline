@@ -1,0 +1,26 @@
+FROM python:3.10-slim
+
+# Prevent Python from generating .pyc files and enable output buffering
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Set the working directory
+WORKDIR /workspace
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip
+RUN pip install --upgrade pip
+
+# Install LangChain and its dependencies
+RUN pip install langchain
+
+# Expose port 8000
+EXPOSE 8000
+
+# Default command runs dummy.py to keep the container running
+CMD ["python", "dummy.py"]
