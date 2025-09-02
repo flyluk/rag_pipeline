@@ -205,3 +205,8 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+chroma_db/
+uploaded_files/
+.github/
+current_process.txt

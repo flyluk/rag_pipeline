@@ -11,13 +11,26 @@ WORKDIR /workspace
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     build-essential \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip
-RUN pip install --upgrade pip
+# Create a non-root user
+RUN groupadd --gid 1000 fly \
+    && useradd --uid 1000 --gid fly --shell /bin/bash --create-home fly
 
-# Install LangChain and its dependencies
-RUN pip install langchain
+# Copy requirements file
+COPY requirements.txt .
+
+# Upgrade pip and install dependencies
+RUN pip install --upgrade pip && pip install -r requirements.txt
+
+
+
+# Change ownership of workspace to fly user
+RUN chown -R fly:fly /workspace
+
+# Switch to non-root user
+USER fly
 
 # Expose port 8000
 EXPOSE 8000

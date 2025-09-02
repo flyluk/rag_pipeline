@@ -1,0 +1,7 @@
+cryptography>=3.1
+langchain-ollama
+langchain-chroma
+langchain-community
+langchain-core
+langchain
+pydantic

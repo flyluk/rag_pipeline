@@ -45,6 +45,8 @@ services:
     volumes:
       - .:/workspace   # Mounts your working directory inside the container.
       - /mnt/c/Users/flyluk/Downloads:/workfiles
+      - /home/fly/development:/development
+
     ports:
       - "8000:8000"   # Adjust or add additional ports as needed.
     environment:

@@ -2,18 +2,19 @@ import os
 import tempfile
 import json
 import re
+import shutil
 from typing import List, Dict, Any
 from datetime import datetime
-from langchain_ollama import OllamaLLM, OllamaEmbeddings
+from langchain_ollama import OllamaLLM
+from langchain_ollama import OllamaEmbeddings
 from langchain_community.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import Chroma
+from langchain_chroma.vectorstores import Chroma
 from langchain.prompts import PromptTemplate
 from langchain.schema import Document
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from pydantic import BaseModel, Field
-import chromadb
 
 # Define Pydantic models for tagging
 class DocumentTags(BaseModel):
@@ -23,7 +24,7 @@ class DocumentTags(BaseModel):
     language: str = Field(description="Language of the document")
 
 class RAGSystem:
-    def __init__(self, model_name: str = "deepseek-r1:14b", embedding_model: str = "mxbai-embed-large", 
+    def __init__(self, model_name: str = "deepseek-r1:14b", embedding_model: str = "nomic-embed-text", 
                  upload_dir: str = "uploaded_files", persist_directory: str = "./chroma_db"):
         self.model_name = model_name
         self.embedding_model = embedding_model
@@ -68,12 +69,29 @@ class RAGSystem:
             search_kwargs={"k": 4, "score_threshold": 0.4}
         )
     
+    def normalize_filename(self, filename: str) -> str:
+        """Normalize filename by removing special characters and spaces"""
+        # Remove or replace problematic characters
+        normalized = re.sub(r'[<>:"/\|?*]', '_', filename)
+        normalized = re.sub(r'\s+', '_', normalized)
+        normalized = re.sub(r'_+', '_', normalized)
+        return normalized.strip('_').lower().capitalize()
+    
     def save_uploaded_file(self, uploaded_file) -> str:
-        """Save uploaded file to a temporary location"""
-        file_ext = os.path.splitext(uploaded_file.name)[1]
-        with tempfile.NamedTemporaryFile(delete=False, suffix=file_ext) as tmp_file:
-            tmp_file.write(uploaded_file.getbuffer())
-            return tmp_file.name
+        """Save uploaded file to upload directory with normalized filename"""
+        normalized_name = self.normalize_filename(uploaded_file.name)
+        file_path = os.path.join(self.upload_dir, normalized_name)
+        
+        # Handle duplicate filenames
+        counter = 1
+        base_name, ext = os.path.splitext(normalized_name)
+        while os.path.exists(file_path):
+            file_path = os.path.join(self.upload_dir, f"{base_name}_{counter}{ext}")
+            counter += 1
+        
+        with open(file_path, 'wb') as f:
+            f.write(uploaded_file.getbuffer())
+        return file_path
     
     def load_document(self, file_path: str) -> List[Document]:
         """Load document based on file extension"""
@@ -95,8 +113,7 @@ class RAGSystem:
         all_documents = []
         
         for i, file_path in enumerate(file_paths):
-            try:
-                print(original_filenames[i])
+            try:                
                 documents = self.load_document(file_path)
                 original_name = original_filenames[i] if original_filenames and i < len(original_filenames) else os.path.basename(file_path)
                 
@@ -273,9 +290,21 @@ class RAGSystem:
             language=first_doc.metadata.get('language', 'Unknown')
         ) if first_doc else None
         
+        # Copy file to organized folder structure
+        organized_path = None
+        if tags:
+            category = self.normalize_filename(tags.category)
+            topic = self.normalize_filename(tags.topics[0]) if tags.topics else 'general'
+            folder_path = os.path.join(self.upload_dir, category, topic)
+            os.makedirs(folder_path, exist_ok=True)
+            normalized_filename = self.normalize_filename(original_filename)
+            organized_path = os.path.join(folder_path, normalized_filename)
+            shutil.copy2(file_path, organized_path)
+        
         return {
             "filename": original_filename,
             "stored_path": file_path,
+            "organized_path": organized_path,
             "summary": first_doc.metadata.get('summary', '') if first_doc else '',
             "tags": tags,
             "chunks_processed": len(documents),
