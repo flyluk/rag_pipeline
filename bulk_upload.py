@@ -18,8 +18,16 @@ def find_documents(directory: str) -> list:
 def main():
     start_time = time.time()
     
-    # Initialize RAG system
-    rag_system = RAGSystem()
+    # Get Open WebUI configuration
+    openwebui_url = input("Enter Open WebUI URL (default: http://localhost:3000): ").strip() or "http://localhost:3000"
+    openwebui_api_key = input("Enter Open WebUI API key: ").strip()
+    
+    if not openwebui_api_key:
+        print("API key is required for Open WebUI integration")
+        return
+    
+    # Initialize RAG system with Open WebUI config
+    rag_system = RAGSystem(openwebui_base_url=openwebui_url, openwebui_api_key=openwebui_api_key)
     
     # Directory to scan (change this to your target directory)
     target_directory = input("Enter directory path to scan: ").strip()
@@ -59,14 +67,24 @@ def main():
                 f.write(filename)
             
             # Check if file already exists in vector DB (skip if not in reprocess list)
-            if rag_system.file_exists(filename) and filename not in reprocess_list:
-                print(f"[{bar}] {i}/{len(documents)} {elapsed}s Skipping: {filename} (already exists)")
-                continue
+            #if rag_system.file_exists(filename) and filename not in reprocess_list:
+            #    print(f"[{bar}] {i}/{len(documents)} {elapsed}s Skipping: {filename} (already exists)")
+            #    continue
                 
             print(f"[{bar}] {i}/{len(documents)} {elapsed}s Processing: {filename}")
             
             result = rag_system.process_uploaded_file(doc_path, filename)
-            print(f"✓ Processed {filename} - {result['chunks_processed']} chunks")
+            
+            # Upload to Open WebUI if tags are available
+            if result.get('tags') and result['tags'].category:
+                try:
+                    openwebui_result = rag_system.upload_to_openwebui(doc_path, result['tags'].category)
+                    kb_name = openwebui_result['knowledge_base']['name']
+                    print(f"✓ Processed {filename} - {result['chunks_processed']} chunks, uploaded to KB: {kb_name}")
+                except Exception as e:
+                    print(f"✓ Processed {filename} - {result['chunks_processed']} chunks, OpenWebUI upload failed: {str(e)}")
+            else:
+                print(f"✓ Processed {filename} - {result['chunks_processed']} chunks")
             
         except Exception as e:
             print(f"✗ Error processing {doc_path}: {str(e)}")

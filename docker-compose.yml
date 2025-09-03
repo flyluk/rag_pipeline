@@ -12,7 +12,8 @@ services:
       - "open-webui:/app/backend/data"
     environment:
       - gpus=all
-      - OPENWEATHER_API_KEY=bab87f014e91b33605cf8c69dc3db86d
+      - OPENWEATHER_API_KEY=bab87f014e91b33605cf8c69dc3db86d      
+      - ENV=dev
     networks:
       - deepseek
     hostname: open-webui

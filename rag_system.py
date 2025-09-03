@@ -1,19 +1,13 @@
 import os
-import tempfile
 import json
 import re
 import shutil
+import requests
 from typing import List, Dict, Any
 from datetime import datetime
 from langchain_ollama import OllamaLLM
-from langchain_ollama import OllamaEmbeddings
 from langchain_community.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_chroma.vectorstores import Chroma
-from langchain.prompts import PromptTemplate
 from langchain.schema import Document
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough
 from pydantic import BaseModel, Field
 
 # Define Pydantic models for tagging
@@ -24,12 +18,12 @@ class DocumentTags(BaseModel):
     language: str = Field(description="Language of the document")
 
 class RAGSystem:
-    def __init__(self, model_name: str = "deepseek-r1:14b", embedding_model: str = "nomic-embed-text", 
-                 upload_dir: str = "uploaded_files", persist_directory: str = "./chroma_db"):
+    def __init__(self, model_name: str = "deepseek-r1:14b", upload_dir: str = "uploaded_files",
+                 openwebui_base_url: str = "http://localhost:3000", openwebui_api_key: str = ""):
         self.model_name = model_name
-        self.embedding_model = embedding_model
         self.upload_dir = upload_dir
-        self.persist_directory = persist_directory
+        self.openwebui_base_url = openwebui_base_url
+        self.openwebui_api_key = openwebui_api_key
         
         # Create upload directory if it doesn't exist
         os.makedirs(upload_dir, exist_ok=True)
@@ -38,35 +32,7 @@ class RAGSystem:
         self.llm = OllamaLLM(
             model=model_name, 
             temperature=0.1,
-            base_url="http://ollama:11434"
-        )
-        
-        self.embeddings = OllamaEmbeddings(
-            model=embedding_model,
-            base_url="http://ollama:11434"
-        )
-        
-        # Initialize vector store
-        self.vector_store = Chroma(
-            persist_directory=persist_directory,
-            embedding_function=self.embeddings
-        )
-        
-        self.retriever = None
-        self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=1000,
-            chunk_overlap=200,
-            separators=["\n\n", "\n", " ", ""]
-        )
-        
-        # Set up retriever
-        self.setup_retriever()
-    
-    def setup_retriever(self):
-        """Initialize the retriever"""
-        self.retriever = self.vector_store.as_retriever(
-            search_type="similarity_score_threshold",
-            search_kwargs={"k": 4, "score_threshold": 0.4}
+            base_url="http://localhost:11434"
         )
     
     def normalize_filename(self, filename: str) -> str:
@@ -136,70 +102,8 @@ class RAGSystem:
                 print(f"Error processing {file_path}: {str(e)}")
                 continue
         
-        # Split documents into chunks
-        chunks = self.text_splitter.split_documents(all_documents)
-        print(f"Created {len(chunks)} document chunks")
-        return chunks
-    
-    def add_documents_to_vector_store(self, documents: List[Document]):
-        """Add documents to the vector store"""
-        if documents:
-            self.vector_store.add_documents(documents)
-            # Update retriever after adding documents
-            self.setup_retriever()
-    
-    def setup_qa_chain(self):
-        """Set up the question-answering chain"""
-        prompt_template = """
-        You are a helpful AI assistant. Answer the question based only on the following context:
-        {context}
-        
-        Question: {question}
-        
-        If the answer isn't in the context, say "I cannot find this information in the provided documents."
-        Provide a detailed and helpful answer otherwise.
-        Answer: """
-        
-        prompt = PromptTemplate(
-            template=prompt_template,
-            input_variables=["context", "question"]
-        )
-        
-        self.qa_chain = (
-            {"context": self.retriever, "question": RunnablePassthrough()}
-            | prompt
-            | self.llm
-            | StrOutputParser()
-        )
-    
-    def ask_question(self, question: str) -> Dict[str, Any]:
-        """Ask a question and get an answer with sources"""
-        # Get source documents first
-        source_docs = self.retriever.invoke(question)
-        
-        if source_docs:
-            # Use RAG chain if relevant documents found
-            if not hasattr(self, 'qa_chain') or self.qa_chain is None:
-                self.setup_qa_chain()
-            answer = self.qa_chain.invoke(question)
-            sources = [
-                {
-                    "content": doc.page_content[:200] + "...",
-                    "source": doc.metadata.get("source", "Unknown"),
-                    "filename": doc.metadata.get("filename", "Unknown")
-                }
-                for doc in source_docs
-            ]
-        else:
-            # Fallback to base model if no relevant documents
-            answer = self.llm.invoke(question)
-            sources = []
-        
-        return {
-            "question": question,
-            "answer": answer,
-            "sources": sources
-        }
+        print(f"Processed {len(all_documents)} documents")
+        return all_documents
     
     def summarize_document(self, document_path: str) -> str:
         """Generate a summary of a single document"""
@@ -274,12 +178,9 @@ class RAGSystem:
         )
     
     def process_uploaded_file(self, file_path: str, original_filename: str):
-        """Process an uploaded file and add to knowledge base"""
+        """Process an uploaded file"""
         # Process document (includes summary and tags generation)
         documents = self.process_documents([file_path], [original_filename])
-        
-        # Add to vector store
-        self.add_documents_to_vector_store(documents)
         
         # Extract tags from first document for return value
         first_doc = documents[0] if documents else None
@@ -312,38 +213,121 @@ class RAGSystem:
         }
     
     def file_exists(self, filename: str) -> bool:
-        """Check if a file already exists in the vector database"""
+        """Check if a file already exists in the upload directory"""
+        return os.path.exists(os.path.join(self.upload_dir, filename))
+    
+    def create_knowledge_base(self, name: str, description: str = "") -> Dict[str, Any]:
+        """Create a new knowledge base in Open WebUI"""
+        # First check if knowledge base already exists
+        list_url = f"{self.openwebui_base_url}/api/v1/knowledge/list"
+        headers = {"Authorization": f"Bearer {self.openwebui_api_key}"}
+        
         try:
-            all_docs = self.vector_store.get()['metadatas']
-            return any(doc.get('filename') == filename for doc in all_docs)
-        except Exception:
-            return False
+            response = requests.get(list_url, headers=headers)
+            if response.status_code == 200:
+                kb_list = response.json()
+                for kb in kb_list:
+                    if kb.get("name") == name:
+                        return kb
+        except requests.exceptions.RequestException:
+            pass
+        
+        # If not found, create new knowledge base
+        create_url = f"{self.openwebui_base_url}/api/v1/knowledge/create"
+        create_headers = {"Authorization": f"Bearer {self.openwebui_api_key}", "Content-Type": "application/json"}
+        data = {"name": name, "description": description}
+        
+        try:
+            response = requests.post(create_url, headers=create_headers, json=data)
+            if response.status_code in [200, 201]:
+                return response.json()
+        except requests.exceptions.RequestException:
+            pass
+        
+        # Fallback structure
+        return {"id": name.lower().replace(" ", "_"), "name": name, "description": description}
+    
+    def get_knowledge_base_by_name(self, name: str) -> Dict[str, Any]:
+        """Get knowledge base by name"""
+        url = f"{self.openwebui_base_url}/api/v1/knowledge"
+        headers = {"Authorization": f"Bearer {self.openwebui_api_key}"}
+        
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        
+        for kb in response.json():
+            if kb["name"] == name:
+                return kb
+        raise ValueError(f"Knowledge base '{name}' not found")
+    
+    def upload_to_openwebui(self, file_path: str, category: str) -> Dict[str, Any]:
+        """Upload file to Open WebUI and add to category-based knowledge base"""
+        # Normalize category name for knowledge base
+        kb_name = self.normalize_filename(category).replace('_', ' ').title()
+        
+        # Create or get knowledge base
+        try:
+            kb = self.create_knowledge_base(kb_name, f"Knowledge base for {category} documents")
+        except Exception as e:
+            raise Exception(f"Failed to create/get knowledge base: {str(e)}")
+        
+        # Step 1: Upload file to /api/v1/files/
+        upload_url = f"{self.openwebui_base_url}/api/v1/files/"
+        upload_headers = {
+            "Authorization": f"Bearer {self.openwebui_api_key}",
+            "Accept": "application/json"
+        }
+        with open(file_path, 'rb') as f:
+            files = {'file': (os.path.basename(file_path), f)}
+            upload_response = requests.post(upload_url, headers=upload_headers, files=files)
+        
+        if upload_response.status_code not in [200, 201]:
+            upload_response.raise_for_status()
+        
+        upload_result = upload_response.json()
+        file_id = upload_result.get('id')
+        
+        if not file_id:
+            raise Exception("File upload succeeded but no file ID returned")
+        
+        # Step 2: Add file to knowledge base using /api/v1/knowledge/{kb_id}/file/add
+        add_url = f"{self.openwebui_base_url}/api/v1/knowledge/{kb['id']}/file/add"
+        add_headers = {
+            "Authorization": f"Bearer {self.openwebui_api_key}",
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
+        add_data = {"file_id": file_id}
+        add_response = requests.post(add_url, headers=add_headers, json=add_data)
+        
+        if add_response.status_code not in [200, 201]:
+            add_response.raise_for_status()
+        
+        return {
+            "knowledge_base": kb,
+            "upload_result": upload_result,
+            "add_result": add_response.json(),
+            "file_id": file_id
+        }
     
     def list_uploaded_documents(self) -> List[Dict[str, Any]]:
-        """List all uploaded documents with their metadata"""
-        try:
-            # Get all documents from the vector store
-            all_docs = self.vector_store.get()['metadatas']
-            
-            # Extract unique documents by source path
-            unique_docs = {}
-            for doc in all_docs:
-                source_path = doc.get('source', '')
-                if source_path and source_path not in unique_docs:
-                    unique_docs[source_path] = {
-                        'filename': doc.get('filename', 'Unknown'),
-                        'source_path': source_path,
-                        'upload_time': doc.get('upload_time', 'Unknown'),
-                        'category': doc.get('category', 'Unknown'),
-                        'topics': doc.get('topics', 'Unknown'),
-                        'sentiment': doc.get('sentiment', 'Unknown'),
-                        'language': doc.get('language', 'Unknown'),
-                        'summary': doc.get('summary', 'Unknown')
-                    }
-            
-            return list(unique_docs.values())
-        except Exception as e:
-            print(f"Error listing documents: {e}")
-            return []
-                    
-            
+        """List all uploaded documents from Open WebUI knowledge bases"""
+        url = f"{self.openwebui_base_url}/api/v1/knowledge"
+        headers = {"Authorization": f"Bearer {self.openwebui_api_key}"}
+        
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        
+        all_docs = []
+        for kb in response.json():
+            kb_files_url = f"{self.openwebui_base_url}/api/v1/knowledge/{kb['id']}/file"
+            files_response = requests.get(kb_files_url, headers=headers)
+            if files_response.status_code == 200:
+                for file_info in files_response.json():
+                    all_docs.append({
+                        'filename': file_info.get('filename', 'Unknown'),
+                        'knowledge_base': kb['name'],
+                        'upload_time': file_info.get('created_at', 'Unknown'),
+                        'file_id': file_info.get('id', 'Unknown')
+                    })
+        return all_docs
