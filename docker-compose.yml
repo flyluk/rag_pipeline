@@ -39,6 +39,22 @@ services:
               count: 1
               capabilities: [gpu]    
 
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      - POSTGRES_DB=vectordb
+      - POSTGRES_USER=raguser
+      - POSTGRES_PASSWORD=ragpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      #- ./setup_vectordb.sql:/docker-entrypoint-initdb.d/setup_vectordb.sql
+    networks:
+      - deepseek
+    hostname: postgres
+    restart: unless-stopped
+
   development:
     build:
       context: .
@@ -52,10 +68,13 @@ services:
       - "8000:8000"   # Adjust or add additional ports as needed.
     environment:
       - ENV=development
+      - DATABASE_URL=postgresql://raguser:ragpassword@postgres:5432/vectordb
     networks:
       - deepseek
     hostname: development
     restart: unless-stopped
+    depends_on:
+      - postgres
 
 networks:
   deepseek:
@@ -65,4 +84,6 @@ volumes:
   open-webui-new:
     external: true
   ollama-new:
+    external: true
+  postgres_data:
     external: true

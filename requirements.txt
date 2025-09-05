@@ -9,3 +9,5 @@ pypdf
 requests
 docx2txt
 chromadb
+langchain_postgres
+psycopg2-binary

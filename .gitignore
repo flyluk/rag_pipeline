@@ -210,3 +210,4 @@ chroma_db/
 uploaded_files/
 .github/
 current_process.txt
+failed_files.txt

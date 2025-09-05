@@ -1,108 +1,131 @@
 # RAG Pipeline
 
-A comprehensive RAG (Retrieval-Augmented Generation) pipeline system that processes documents, categorizes them using AI, and integrates with Open WebUI for knowledge base management.
+A comprehensive RAG (Retrieval-Augmented Generation) pipeline system that processes documents, categorizes them using AI, and stores them in PostgreSQL with pgvector for efficient similarity search.
 
 ## Overview
 
-The system consists of two main components:
-- **RAGSystem**: Core document processing and AI integration
-- **bulk_upload**: Command line utility for ingesting files to Open WebUI for RAG processing
+The system consists of main components:
+- **PostgresBulkIngest**: Core document processing with PostgreSQL/pgvector backend
+- **RAGSystem**: AI integration and document analysis
+- **Streamlit Interface**: Web UI for querying and browsing documents
 
 ## Features
 
 - Document processing (PDF, DOCX, TXT)
 - AI-powered document categorization and tagging
+- PostgreSQL with pgvector for vector storage
 - Automatic document summarization
-- Integration with Open WebUI knowledge bases
-- Command line utility for bulk file uploads
+- Interruption recovery and failed file tracking
+- Real-time processing metrics and timing
+- Streamlit web interface for document querying
+- Docker Compose setup with all services
 
 ## Components
 
-### RAGSystem (`rag_system.py`)
+### PostgresBulkIngest (`chroma_bulk_ingest.py`)
 
 Core class that handles:
 - Document loading and processing
 - AI-powered categorization using Ollama LLM
-- Document summarization
-- Open WebUI integration
+- PostgreSQL/pgvector storage
+- Interruption recovery and retry logic
 
 #### Key Methods:
-- `process_uploaded_file()`: Process and categorize a single file
-- `upload_to_openwebui()`: Upload file to Open WebUI knowledge base
-- `categorize_and_tag_document()`: AI-powered document analysis
-- `summarize_document()`: Generate document summaries
+- `ingest_documents()`: Process and store documents with timing metrics
+- `file_exists_in_db()`: Check for duplicate files
+- `get_files_by_category()`: Retrieve files grouped by category
+- `extract_metadata()`: AI-powered document analysis
 
-### Bulk Upload Utility (`bulk_upload.py`)
+### Streamlit Interface (`streamlit_app.py`)
 
-Command line utility providing:
-- Batch file processing
-- Automatic document categorization
-- Direct Open WebUI integration
-- File ingestion for RAG processing
+Web interface providing:
+- Document querying with category filtering
+- File browsing by category
+- Real-time search results
+- Source and metadata display
 
 ## Usage
 
-### Setup
+### Setup with Docker Compose
+
+1. Start all services:
+```bash
+docker-compose up -d
+```
+
+2. Setup database (first time only):
+```bash
+./setup_db.sh
+```
+
+### Manual Setup
 
 1. Install dependencies:
 ```bash
-pip install langchain langchain-community requests pydantic
+pip install langchain langchain-postgres psycopg2-binary
 ```
 
-2. Ensure Ollama is running:
+2. Setup PostgreSQL with pgvector:
 ```bash
-# Default: http://localhost:11434
+./setup_db.sh
 ```
 
-3. Configure Open WebUI (optional):
-- Set base URL (default: http://localhost:3000)
-- Provide API key for integration
-
-### Running the Bulk Upload Utility
+### Processing Documents
 
 ```bash
-python bulk_upload.py [file_path_or_directory]
+python chroma_bulk_ingest.py /path/to/documents
 ```
 
-### Basic Usage
+### Web Interface
 
-1. **Process Files**: Run utility with file or directory path
-2. **AI Processing**: System automatically:
-   - Analyzes document content
-   - Categorizes by topic
-   - Generates summary
-   - Determines sentiment and language
-3. **Open WebUI Integration**: Automatically uploads to knowledge bases for RAG processing
+```bash
+streamlit run streamlit_app.py
+```
+
+### Basic Workflow
+
+1. **Process Files**: Bulk ingest documents with AI analysis
+2. **Vector Storage**: Documents stored in PostgreSQL with embeddings
+3. **Query Interface**: Use Streamlit UI to search and browse documents
 
 ## Configuration
 
-### RAGSystem Parameters
+### PostgresBulkIngest Parameters
 
 ```python
-rag = RAGSystem(
-    model_name="deepseek-r1:14b",  # Ollama model
-    upload_dir="uploaded_files",    # Storage directory
-    openwebui_base_url="http://localhost:3000",
-    openwebui_api_key="your-api-key"
+ingest = PostgresBulkIngest(
+    collection_name="documents",
+    connection_string="postgresql://raguser:ragpassword@localhost:5432/vectordb",
+    embedding_model="nomic-embed-text",
+    llm_model="deepseek-r1:7b"
 )
 ```
 
 ### Document Processing Flow
 
-1. **File Upload** → Save to temporary location
-2. **Content Extraction** → Load document content
-3. **AI Analysis** → Categorize and tag using LLM
-4. **Summarization** → Generate document summary
-5. **Open WebUI** → Upload to knowledge base
+1. **File Detection** → Find supported documents
+2. **Duplicate Check** → Skip already processed files
+3. **Content Extraction** → Load document content
+4. **AI Analysis** → Categorize and tag using LLM
+5. **Vector Storage** → Store embeddings in PostgreSQL
+6. **Progress Tracking** → Real-time metrics and failed file recovery
 
-## API Integration
+## Database Management
 
-### Open WebUI Endpoints
+### Reset Database
+```bash
+./reset_db.sh
+```
 
-- `GET /api/v1/knowledge/list` - List knowledge bases
-- `POST /api/v1/knowledge/create` - Create knowledge base
-- `POST /api/v1/files/` - Upload file
-- `POST /api/v1/knowledge/{id}/file/add` - Add file to knowledge base
+### Reindex for Performance
+```bash
+./reindex_db.sh
+```
+
+### Connection String
+```
+postgresql://raguser:ragpassword@localhost:5432/vectordb
+```
 
 ## File Support
 
@@ -125,17 +148,30 @@ Generates concise summaries focusing on:
 - Key findings
 - Important conclusions
 
-## Error Handling
+## Features
 
-- Graceful fallbacks for API failures
-- Local storage when Open WebUI unavailable
-- Comprehensive error logging
-- User-friendly error messages
+### Processing Metrics
+- Individual file processing time
+- Running average time per file
+- Total elapsed time
+- Progress tracking with file counts
+
+### Error Recovery
+- Interruption handling (Ctrl+C)
+- Failed file tracking in `failed_files.txt`
+- Automatic reprocessing of failed files
+- Duplicate detection and skipping
+
+### Performance
+- PostgreSQL with pgvector for fast similarity search
+- Optimized indexing for vector operations
+- Batch processing with real-time feedback
 
 ## Dependencies
 
 - `langchain`: LLM integration
-- `langchain-community`: Document loaders
-- `requests`: HTTP client
-- `pydantic`: Data validation
-- `ollama`: Local LLM server
+- `langchain-postgres`: PostgreSQL vector store
+- `langchain-ollama`: Ollama integration
+- `psycopg2-binary`: PostgreSQL adapter
+- `streamlit`: Web interface
+- `pgvector`: PostgreSQL vector extension

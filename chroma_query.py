@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 import sys
 from langchain_ollama import OllamaEmbeddings, OllamaLLM
-from langchain_chroma import Chroma
+from langchain_postgres import PGVector
 
-class ChromaQuery:
+class PostgresQuery:
     def __init__(self, 
                  collection_name: str = "documents",
-                 persist_directory: str = "./chroma_db",
+                 connection_string: str = "postgresql://raguser:ragpassword@localhost:5432/vectordb",
                  embedding_model: str = "nomic-embed-text",
                  llm_model: str = "deepseek-r1:7b"):
         
@@ -14,20 +14,42 @@ class ChromaQuery:
         self.llm = OllamaLLM(model=llm_model, temperature=0.1)
         
         # Load existing vectorstore
-        self.vectorstore = Chroma(
+        self.vectorstore = PGVector(
+            embeddings=self.embeddings,
             collection_name=collection_name,
-            embedding_function=self.embeddings,
-            persist_directory=persist_directory
+            connection=connection_string
         )
     
     def query(self, question: str, k: int = 3, category_filter: str = None):
         """Query the vectorstore and generate answer"""
         # Apply category filter if specified
         if category_filter:
-            docs = self.vectorstore.similarity_search(
-                question, k=k, 
-                filter={"category": category_filter}
-            )
+            # Use direct SQL query instead of filter for PostgreSQL compatibility
+            import psycopg2
+            conn = psycopg2.connect("postgresql://raguser:ragpassword@localhost:5432/vectordb")
+            
+            # Get embedding for the question
+            query_embedding = self.embeddings.embed_query(question)
+            
+            with conn.cursor() as cur:
+                embedding_str = '[' + ','.join(map(str, query_embedding)) + ']'
+                cur.execute("""
+                    SELECT document, cmetadata, embedding <-> %s AS distance
+                    FROM langchain_pg_embedding 
+                    WHERE cmetadata->>'category' = %s
+                    ORDER BY distance ASC
+                    LIMIT %s
+                """, (embedding_str, category_filter, k))
+                
+                results = cur.fetchall()
+            
+            conn.close()
+            
+            # Convert results to document format
+            docs = []
+            for doc_text, metadata, distance in results:
+                from langchain.schema import Document
+                docs.append(Document(page_content=doc_text, metadata=metadata))
         else:
             docs = self.vectorstore.similarity_search(question, k=k)
         
@@ -68,13 +90,13 @@ Answer:"""
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python chroma_query.py '<question>' [category_filter]")
+        print("Usage: python postgres_query.py '<question>' [category_filter]")
         sys.exit(1)
     
     question = sys.argv[1]
     category_filter = sys.argv[2] if len(sys.argv) > 2 else None
     
-    query_system = ChromaQuery()
+    query_system = PostgresQuery()
     
     print(f"Question: {question}")
     if category_filter:
@@ -89,4 +111,4 @@ def main():
     print(f"Topics: {', '.join(result['topics'])}")
 
 if __name__ == "__main__":
-    main()
+    main() 
