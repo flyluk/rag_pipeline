@@ -9,10 +9,10 @@ services:
     ports:
       - "3000:8080"
     volumes:
-      - "open-webui:/app/backend/data"
+      - "open-webui-new:/app/backend/data"
     environment:
       - gpus=all
-      - OPENWEATHER_API_KEY=bab87f014e91b33605cf8c69dc3db86d      
+      - OPENWEATHER_API_KEY=bab87f014e91b33605cf8c69dc3db86d
       - ENV=dev
     networks:
       - deepseek
@@ -22,7 +22,7 @@ services:
   ollama:
     image: ollama/ollama:latest
     volumes:
-      - "ollama:/root/.ollama"
+      - "ollama-new:/root/.ollama"
     ports:
       - "11434:11434"
     environment:
@@ -62,7 +62,7 @@ networks:
     driver: bridge
 
 volumes:
-  open-webui:
+  open-webui-new:
     external: true
-  ollama:
+  ollama-new:
     external: true

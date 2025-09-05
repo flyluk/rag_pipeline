@@ -18,7 +18,7 @@ class DocumentTags(BaseModel):
     language: str = Field(description="Language of the document")
 
 class RAGSystem:
-    def __init__(self, model_name: str = "deepseek-r1:14b", upload_dir: str = "uploaded_files",
+    def __init__(self, model_name: str = "deepseek-r1:7b", upload_dir: str = "uploaded_files",
                  openwebui_base_url: str = "http://localhost:3000", openwebui_api_key: str = ""):
         self.model_name = model_name
         self.upload_dir = upload_dir
@@ -84,7 +84,7 @@ class RAGSystem:
                 original_name = original_filenames[i] if original_filenames and i < len(original_filenames) else os.path.basename(file_path)
                 
                 # Generate summary and tags
-                summary = self.summarize_document(file_path)
+                summary = "no summary" #self.summarize_document(file_path)
                 tags = self.categorize_and_tag_document(file_path)
                 
                 for doc in documents:
@@ -193,14 +193,14 @@ class RAGSystem:
         
         # Copy file to organized folder structure
         organized_path = None
-        if tags:
-            category = self.normalize_filename(tags.category)
-            topic = self.normalize_filename(tags.topics[0]) if tags.topics else 'general'
-            folder_path = os.path.join(self.upload_dir, category, topic)
-            os.makedirs(folder_path, exist_ok=True)
-            normalized_filename = self.normalize_filename(original_filename)
-            organized_path = os.path.join(folder_path, normalized_filename)
-            shutil.copy2(file_path, organized_path)
+        # if tags:
+        #     category = self.normalize_filename(tags.category)
+        #     topic = self.normalize_filename(tags.topics[0]) if tags.topics else 'general'
+        #     folder_path = os.path.join(self.upload_dir, category, topic)
+        #     os.makedirs(folder_path, exist_ok=True)
+        #     normalized_filename = self.normalize_filename(original_filename)
+        #     organized_path = os.path.join(folder_path, normalized_filename)
+        #     shutil.copy2(file_path, organized_path)
         
         return {
             "filename": original_filename,
@@ -215,6 +215,23 @@ class RAGSystem:
     def file_exists(self, filename: str) -> bool:
         """Check if a file already exists in the upload directory"""
         return os.path.exists(os.path.join(self.upload_dir, filename))
+    
+    def file_exists_in_openwebui(self, filename: str) -> Dict[str, Any]:
+        """Check if file already exists in Open WebUI"""
+        search_url = f"{self.openwebui_base_url}/api/v1/files/search"
+        headers = {"Authorization": f"Bearer {self.openwebui_api_key}"}
+        params = {"filename": filename, "content": "false"}
+        
+        try:
+            search_response = requests.get(search_url, headers=headers, params=params)
+            if search_response.status_code == 200:
+                search_results = search_response.json()
+                if search_results:
+                    return {"exists": True, "file_id": search_results[0].get('id')}
+        except requests.exceptions.RequestException:
+            pass
+        
+        return {"exists": False, "file_id": None}
     
     def create_knowledge_base(self, name: str, description: str = "") -> Dict[str, Any]:
         """Create a new knowledge base in Open WebUI"""
@@ -271,17 +288,29 @@ class RAGSystem:
         except Exception as e:
             raise Exception(f"Failed to create/get knowledge base: {str(e)}")
         
+        
         # Step 1: Upload file to /api/v1/files/
         upload_url = f"{self.openwebui_base_url}/api/v1/files/"
         upload_headers = {
             "Authorization": f"Bearer {self.openwebui_api_key}",
             "Accept": "application/json"
         }
-        with open(file_path, 'rb') as f:
-            files = {'file': (os.path.basename(file_path), f)}
-            upload_response = requests.post(upload_url, headers=upload_headers, files=files)
         
+        # Detect file type
+        file_ext = os.path.splitext(file_path)[1].lower()
+        content_type = {
+            '.pdf': 'application/pdf',
+            '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            '.txt': 'text/plain'
+        }.get(file_ext, 'application/octet-stream')
+        
+        with open(file_path, 'rb') as f:
+            files = {'file': (os.path.basename(file_path), f, content_type)}
+            data = {'process_in_background': 'false'}
+            upload_response = requests.post(upload_url, headers=upload_headers, files=files, params=data)
+
         if upload_response.status_code not in [200, 201]:
+            print(f"Upload error response: {upload_response.text}")
             upload_response.raise_for_status()
         
         upload_result = upload_response.json()
@@ -295,12 +324,15 @@ class RAGSystem:
         add_headers = {
             "Authorization": f"Bearer {self.openwebui_api_key}",
             "Content-Type": "application/json",
-            "Accept": "application/json"
+            "accept": "application/json"
         }
+
         add_data = {"file_id": file_id}
+
         add_response = requests.post(add_url, headers=add_headers, json=add_data)
         
         if add_response.status_code not in [200, 201]:
+            print(f"Add file error response: {add_response.text}")
             add_response.raise_for_status()
         
         return {

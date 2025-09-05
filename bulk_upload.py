@@ -66,37 +66,39 @@ def main():
             with open("current_process.txt", "w") as f:
                 f.write(filename)
             
-            # Check if file already exists in vector DB (skip if not in reprocess list)
-            #if rag_system.file_exists(filename) and filename not in reprocess_list:
-            #    print(f"[{bar}] {i}/{len(documents)} {elapsed}s Skipping: {filename} (already exists)")
-            #    continue
+            # Check if file already exists in Open WebUI (skip if not in reprocess list)
+            file_check = rag_system.file_exists_in_openwebui(filename)
+            if file_check["exists"] and filename not in reprocess_list:
+                print(f"[{bar}] {i}/{len(documents)} {elapsed}s Skipping: {filename} (already exists in Open WebUI)")
+                continue
                 
-            print(f"[{bar}] {i}/{len(documents)} {elapsed}s Processing: {filename}")
+            print(f"[{bar}] {i}/{len(documents)} {elapsed}s Uploading: {filename}")
             
-            result = rag_system.process_uploaded_file(doc_path, filename)
+            # Upload directly to Open WebUI
+            upload_start = time.time()
+            openwebui_result = rag_system.upload_to_openwebui(doc_path, "general")
+            upload_time = int(time.time() - upload_start)
             
-            # Upload to Open WebUI if tags are available
-            if result.get('tags') and result['tags'].category:
-                try:
-                    openwebui_result = rag_system.upload_to_openwebui(doc_path, result['tags'].category)
-                    kb_name = openwebui_result['knowledge_base']['name']
-                    print(f"✓ Processed {filename} - {result['chunks_processed']} chunks, uploaded to KB: {kb_name}")
-                except Exception as e:
-                    print(f"✓ Processed {filename} - {result['chunks_processed']} chunks, OpenWebUI upload failed: {str(e)}")
-            else:
-                print(f"✓ Processed {filename} - {result['chunks_processed']} chunks")
+            # Calculate average time per file so far
+            current_avg = int(elapsed / i)
+            # Remove from reprocess list if it was there
+            reprocess_list.discard(filename)
+            
+            kb_name = openwebui_result['knowledge_base']['name']
+            print(f"✓ Uploaded {filename} to KB: {kb_name} ({upload_time}s), avg: {current_avg}s/file")
             
         except Exception as e:
-            print(f"✗ Error processing {doc_path}: {str(e)}")
+            print(f"✗ Error uploading {doc_path}: {str(e)}")
     
     # Clean up current process file
     if os.path.exists("current_process.txt"):
         os.remove("current_process.txt")
     
     total_time = int(time.time() - start_time)
+    avg_time_per_file = int(total_time / len(documents)) if len(documents) > 0 else 0
     bar = '█' * 20
-    print(f"\n[{bar}] {len(documents)}/{len(documents)} Completed processing {len(documents)} documents")
-    print(f"Total time: {total_time}s")
+    print(f"\n[{bar}] {len(documents)}/{len(documents)} Completed uploading {len(documents)} documents")
+    print(f"Total time: {total_time}s, Average per file: {avg_time_per_file}s")
 
 if __name__ == "__main__":
     main()

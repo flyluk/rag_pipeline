@@ -2,8 +2,10 @@ cryptography>=3.1
 langchain-ollama
 langchain-community
 langchain
+langchain-chroma
 pydantic
 streamlit
 pypdf
 requests
 docx2txt
+chromadb
