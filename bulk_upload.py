@@ -20,6 +20,7 @@ def main():
     parser = argparse.ArgumentParser(description='Bulk upload documents to Open WebUI with categorization')
     parser.add_argument('directory', help='Directory path to scan for documents')
     parser.add_argument('--url', default='http://localhost:3000', help='Open WebUI URL (default: http://localhost:3000)')
+    parser.add_argument('--category', help='Fixed category for all documents (skips AI categorization)')
     
     api_group = parser.add_mutually_exclusive_group(required=True)
     api_group.add_argument('--api-key', help='Open WebUI API key')
@@ -83,10 +84,15 @@ def main():
                 
             print(f"[{bar}] {i}/{len(documents)} {elapsed}s Uploading: {filename}")
             
-            # Categorize document first
+            # Use fixed category or categorize document
             upload_start = time.time()
-            tags = rag_system.categorize_and_tag_document(doc_path)
-            category = tags.category if tags else "general"
+            if args.category:
+                category = args.category
+                topics = 'Fixed category'
+            else:
+                tags = rag_system.categorize_and_tag_document(doc_path)
+                category = tags.category if tags else "general"
+                topics = ', '.join(tags.topics[:3]) if tags and tags.topics else 'N/A'
             
             # Upload to Open WebUI with categorized knowledge base
             openwebui_result = rag_system.upload_to_openwebui(doc_path, category)
@@ -98,7 +104,6 @@ def main():
             reprocess_list.discard(filename)
             
             kb_name = openwebui_result['knowledge_base']['name']
-            topics = ', '.join(tags.topics[:3]) if tags and tags.topics else 'N/A'
             print(f"✓ Uploaded {filename} to KB: {kb_name} | Topics: {topics} ({upload_time}s), avg: {current_avg}s/file")
             
         except Exception as e:
