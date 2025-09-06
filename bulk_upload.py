@@ -1,5 +1,6 @@
 import os
 import time
+import argparse
 from pathlib import Path
 from rag_system import RAGSystem
 
@@ -16,25 +17,33 @@ def find_documents(directory: str) -> list:
     return documents
 
 def main():
+    parser = argparse.ArgumentParser(description='Bulk upload documents to Open WebUI with categorization')
+    parser.add_argument('directory', help='Directory path to scan for documents')
+    parser.add_argument('--url', default='http://localhost:3000', help='Open WebUI URL (default: http://localhost:3000)')
+    
+    api_group = parser.add_mutually_exclusive_group(required=True)
+    api_group.add_argument('--api-key', help='Open WebUI API key')
+    api_group.add_argument('--api-key-file', help='File containing Open WebUI API key')
+    
+    args = parser.parse_args()
+    
+    if not os.path.exists(args.directory):
+        print(f"Directory {args.directory} does not exist")
+        return
+    
+    # Get API key from argument or file
+    if args.api_key:
+        api_key = args.api_key
+    else:
+        with open(args.api_key_file, 'r') as f:
+            api_key = f.read().strip()
+    
     start_time = time.time()
     
-    # Get Open WebUI configuration
-    openwebui_url = input("Enter Open WebUI URL (default: http://localhost:3000): ").strip() or "http://localhost:3000"
-    openwebui_api_key = input("Enter Open WebUI API key: ").strip()
-    
-    if not openwebui_api_key:
-        print("API key is required for Open WebUI integration")
-        return
-    
     # Initialize RAG system with Open WebUI config
-    rag_system = RAGSystem(openwebui_base_url=openwebui_url, openwebui_api_key=openwebui_api_key)
+    rag_system = RAGSystem(openwebui_base_url=args.url, openwebui_api_key=api_key)
     
-    # Directory to scan (change this to your target directory)
-    target_directory = input("Enter directory path to scan: ").strip()
-    
-    if not os.path.exists(target_directory):
-        print(f"Directory {target_directory} does not exist")
-        return
+    target_directory = args.directory
     
     # Find all documents
     documents = find_documents(target_directory)
@@ -74,9 +83,13 @@ def main():
                 
             print(f"[{bar}] {i}/{len(documents)} {elapsed}s Uploading: {filename}")
             
-            # Upload directly to Open WebUI
+            # Categorize document first
             upload_start = time.time()
-            openwebui_result = rag_system.upload_to_openwebui(doc_path, "general")
+            tags = rag_system.categorize_and_tag_document(doc_path)
+            category = tags.category if tags else "general"
+            
+            # Upload to Open WebUI with categorized knowledge base
+            openwebui_result = rag_system.upload_to_openwebui(doc_path, category)
             upload_time = int(time.time() - upload_start)
             
             # Calculate average time per file so far
@@ -85,7 +98,8 @@ def main():
             reprocess_list.discard(filename)
             
             kb_name = openwebui_result['knowledge_base']['name']
-            print(f"✓ Uploaded {filename} to KB: {kb_name} ({upload_time}s), avg: {current_avg}s/file")
+            topics = ', '.join(tags.topics[:3]) if tags and tags.topics else 'N/A'
+            print(f"✓ Uploaded {filename} to KB: {kb_name} | Topics: {topics} ({upload_time}s), avg: {current_avg}s/file")
             
         except Exception as e:
             print(f"✗ Error uploading {doc_path}: {str(e)}")
