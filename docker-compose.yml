@@ -55,6 +55,33 @@ services:
     hostname: postgres
     restart: unless-stopped
 
+  docling:
+    image: ghcr.io/docling-project/docling-serve-cu128
+    ports:
+      - "5001:5001"
+    environment:
+      - DOCLING_SERVE_ENABLE_UI=true
+      - DOCLING_SERVE_MAX_SYNC_WAIT=3600
+      - DOCLING_SERVE_PORT=5001            
+      - DOCLING_SERVE_STORAGE_PATH=/app/documents
+      - DOCLING_SERVE_LOG_LEVEL=info
+      - NVIDIA_VISIBLE_DEVICES="1"
+      - CUDA_LAUNCH_BLOCKING=1
+    runtime: "nvidia"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]   
+    volumes:
+      - ./documents:/app/documents
+    networks:
+      - deepseek
+    hostname: docling
+    restart: unless-stopped
+
   development:
     build:
       context: .
@@ -69,13 +96,17 @@ services:
     environment:
       - ENV=development
       - DATABASE_URL=postgresql://raguser:ragpassword@postgres:5432/vectordb
+      - DOCLING_URL=http://docling:5001
+      - OPENWEBUI_URL=http://open-webui:8080
+      - OLLAMA_API_URL=http://ollama:11434
+           
     networks:
       - deepseek
     hostname: development
     restart: unless-stopped
     depends_on:
       - postgres
-
+      - docling
 networks:
   deepseek:
     driver: bridge
