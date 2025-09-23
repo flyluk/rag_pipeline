@@ -1,90 +1,123 @@
 import os
-import requests
-from typing import Dict, Any
+import time
+import argparse
+from pathlib import Path
 from rag_system import RAGSystem
 
-class OpenWebUIUploader:
-    def __init__(self, base_url: str = "http://localhost:3000", api_key: str = ""):
-        self.base_url = base_url
-        self.api_key = api_key
-        self.headers = {"Authorization": f"Bearer {api_key}"}
+def find_documents(directory: str) -> list:
+    """Recursively find all PDF, DOC, and TXT files"""
+    supported_extensions = {'.pdf', '.docx', '.txt'}
+    documents = []
     
-    def create_knowledge_base(self, name: str, description: str = "") -> Dict[str, Any]:
-        """Create a new knowledge base in Open WebUI"""
-        url = f"{self.base_url}/api/v1/knowledge"
-        data = {"name": name, "description": description}
-        
-        response = requests.post(url, headers=self.headers, json=data)
-        if response.status_code == 201:
-            return response.json()
-        elif response.status_code == 409:
-            return self.get_knowledge_base_by_name(name)
-        else:
-            response.raise_for_status()
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            if Path(file).suffix.lower() in supported_extensions:
+                documents.append(os.path.join(root, file))
     
-    def get_knowledge_base_by_name(self, name: str) -> Dict[str, Any]:
-        """Get knowledge base by name"""
-        url = f"{self.base_url}/api/v1/knowledge"
-        response = requests.get(url, headers=self.headers)
-        response.raise_for_status()
-        
-        for kb in response.json():
-            if kb["name"] == name:
-                return kb
-        raise ValueError(f"Knowledge base '{name}' not found")
-    
-    def upload_file_to_category(self, file_path: str, category: str) -> Dict[str, Any]:
-        """Upload file to Open WebUI and add to category-based knowledge base"""
-        # Normalize category name
-        kb_name = category.replace('_', ' ').title()
-        
-        # Create or get knowledge base
-        kb = self.create_knowledge_base(kb_name, f"Knowledge base for {category} documents")
-        
-        # Upload file
-        url = f"{self.base_url}/api/v1/knowledge/{kb['id']}/file"
-        with open(file_path, 'rb') as f:
-            files = {'file': (os.path.basename(file_path), f)}
-            response = requests.post(url, headers=self.headers, files=files)
-        
-        if response.status_code == 200:
-            return {"knowledge_base": kb, "upload_result": response.json()}
-        else:
-            response.raise_for_status()
+    return documents
 
-def upload_with_auto_categorization(file_path: str, openwebui_url: str, api_key: str) -> Dict[str, Any]:
-    """Upload file with automatic categorization using RAG system"""
-    # Initialize RAG system for categorization
-    rag_system = RAGSystem()
+def main():
+    parser = argparse.ArgumentParser(description='Bulk upload documents to Open WebUI with categorization')
+    parser.add_argument('directory', help='Directory path to scan for documents')
+    parser.add_argument('--url', default='http://localhost:3000', help='Open WebUI URL (default: http://localhost:3000)')
+    parser.add_argument('--category', help='Fixed category for all documents (skips AI categorization)')
     
-    # Get category from document analysis
-    tags = rag_system.categorize_and_tag_document(file_path)
-    category = tags.category
+    api_group = parser.add_mutually_exclusive_group(required=True)
+    api_group.add_argument('--api-key', help='Open WebUI API key')
+    api_group.add_argument('--api-key-file', help='File containing Open WebUI API key')
     
-    # Upload to Open WebUI
-    uploader = OpenWebUIUploader(openwebui_url, api_key)
-    result = uploader.upload_file_to_category(file_path, category)
+    args = parser.parse_args()
     
-    return {
-        "file_path": file_path,
-        "category": category,
-        "knowledge_base": result["knowledge_base"]["name"],
-        "upload_result": result["upload_result"]
-    }
+    if not os.path.exists(args.directory):
+        print(f"Directory {args.directory} does not exist")
+        return
+    
+    # Get API key from argument or file
+    if args.api_key:
+        api_key = args.api_key
+    else:
+        with open(args.api_key_file, 'r') as f:
+            api_key = f.read().strip()
+    
+    start_time = time.time()
+    
+    # Initialize RAG system with Open WebUI config
+    rag_system = RAGSystem(openwebui_base_url=args.url, openwebui_api_key=api_key)
+    
+    target_directory = args.directory
+    
+    # Find all documents
+    documents = find_documents(target_directory)
+    print(f"Found {len(documents)} documents")
+    
+    # Load reprocess list if exists
+    reprocess_file = "reprocess.txt"
+    reprocess_list = set()
+    if os.path.exists(reprocess_file):
+        with open(reprocess_file, 'r') as f:
+            reprocess_list = set(line.strip() for line in f if line.strip())
+    
+    # Add current_process.txt file to reprocess list if exists
+    if os.path.exists("current_process.txt"):
+        with open("current_process.txt", 'r') as f:
+            current_file = f.read().strip()
+            if current_file:
+                reprocess_list.add(current_file)
+    
+    # Process each document
+    for i, doc_path in enumerate(documents, 1):
+        try:
+            filename = os.path.basename(doc_path)
+            progress_pct = int((i / len(documents)) * 20)
+            bar = '█' * progress_pct + '░' * (20 - progress_pct)
+            elapsed = int(time.time() - start_time)
+            
+            # Write current processing file
+            with open("current_process.txt", "w") as f:
+                f.write(filename)
+            
+            # Check if file already exists in Open WebUI (skip if not in reprocess list)
+            file_check = rag_system.file_exists_in_openwebui(filename)
+            if file_check["exists"] and filename not in reprocess_list:
+                print(f"[{bar}] {i}/{len(documents)} {elapsed}s Skipping: {filename} (already exists in Open WebUI)")
+                continue
+                
+            print(f"[{bar}] {i}/{len(documents)} {elapsed}s Uploading: {filename}")
+            
+            # Use fixed category or categorize document
+            upload_start = time.time()
+            if args.category:
+                category = args.category
+                topics = 'Fixed category'
+            else:
+                tags = rag_system.categorize_and_tag_document(doc_path)
+                category = tags.category if tags else "general"
+                topics = ', '.join(tags.topics[:3]) if tags and tags.topics else 'N/A'
+            
+            # Upload to Open WebUI with categorized knowledge base
+            openwebui_result = rag_system.upload_to_openwebui(doc_path, category)
+            upload_time = int(time.time() - upload_start)
+            
+            # Calculate average time per file so far
+            current_avg = int(elapsed / i)
+            # Remove from reprocess list if it was there
+            reprocess_list.discard(filename)
+            
+            kb_name = openwebui_result['knowledge_base']['name']
+            print(f"✓ Uploaded {filename} to KB: {kb_name} | Topics: {topics} ({upload_time}s), avg: {current_avg}s/file")
+            
+        except Exception as e:
+            print(f"✗ Error uploading {doc_path}: {str(e)}")
+    
+    # Clean up current process file
+    if os.path.exists("current_process.txt"):
+        os.remove("current_process.txt")
+    
+    total_time = int(time.time() - start_time)
+    avg_time_per_file = int(total_time / len(documents)) if len(documents) > 0 else 0
+    bar = '█' * 20
+    print(f"\n[{bar}] {len(documents)}/{len(documents)} Completed uploading {len(documents)} documents")
+    print(f"Total time: {total_time}s, Average per file: {avg_time_per_file}s")
 
 if __name__ == "__main__":
-    # Example usage
-    file_path = input("Enter file path: ").strip()
-    openwebui_url = input("Enter Open WebUI URL (default: http://localhost:3000): ").strip() or "http://localhost:3000"
-    api_key = input("Enter API key: ").strip()
-    
-    if not api_key:
-        print("API key is required")
-        exit(1)
-    
-    try:
-        result = upload_with_auto_categorization(file_path, openwebui_url, api_key)
-        print(f"✓ Uploaded {os.path.basename(file_path)} to knowledge base: {result['knowledge_base']}")
-        print(f"Category: {result['category']}")
-    except Exception as e:
-        print(f"✗ Upload failed: {str(e)}")
+    main()

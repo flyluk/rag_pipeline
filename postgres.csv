@@ -1,0 +1,210 @@
+backend,filename,knowledge_base,upload_time,file_size,file_id,topics,language,sentiment,chunk_count
+PostgreSQL,04_03_17.pdf,金融,,0,,"貸款額, 還款记录, 利率",zh,neutral,63
+PostgreSQL,04_03_17.pdf,信貸,,0,,"貸款額, 還款記錄, 利率, 貸款日期",zh-Hans,neutral,63
+PostgreSQL,1698999347949 - Blog Post.txt,Entrepreneurship,,0,,"International Business, Event Management, Digital Marketing, Nutrition, Fitness, Swimming, Hong Kong, United Kingdom, Singapore",English,positive,2
+PostgreSQL,1698999347949 - Timestamps.txt,Personal Development/Career Aspirations,,0,,"Introduction, Personality Traits, International Learning Experiences, Physical Activities and Skills, Hobbies (Cooking), Nutrition Importance, Goal Setting: Fitness Restaurant, Professional Experiences, Seeking Internship Opportunity, LinkedIn Professional Development",en,positive,1
+PostgreSQL,1698999347949 - Title and Description.txt,Entrepreneurship,,0,,"International Business, Entrepreneurship, Nutrition, Fitness Industry",English,positive,1
+PostgreSQL,20191003_131658_85339790906_85340200220_bulk-statement_20190701_to_20190930_A00000324_141814_International (1).pdf,Investment,,0,,"Restricted Share Units, Market Prices, Account Summary, Investment Performance",English,positive,11
+PostgreSQL,20191003_131658_85339790906_85340200220_bulk-statement_20190701_to_20190930_A00000324_141814_International.pdf,Finance/Investments,,0,,"Financial Performance, Investment Details, Market Analysis",English,positive,11
+PostgreSQL,2021-08-03_Statement.pdf,Personal Finance,,0,,"Account Activities, Deposits, Loans, Payments",English,neutral,12
+PostgreSQL,2021-09-03_Statement.pdf,Financial Statement Analysis,,0,,"Account Holder Details, Bank Transactions, Fraud Prevention Messages, International Transfer Changes",English,neutral,4
+PostgreSQL,2021-10-02_Statement (1).pdf,Financial Transactions,,0,,"Currency Movements, Foreign Transactions, Standing Instructions",en,neutral,7
+PostgreSQL,2021-10-02_Statement.pdf,Financial Transactions,,0,,Account Activities,English,neutral,7
+PostgreSQL,2021-11-03_Statement (1).pdf,bank statement,,0,,"account activities, balance, transactions",English,neutral,6
+PostgreSQL,2021-11-03_Statement.pdf,Financial Transactions,,0,,"Account Activities, Deposits, Withdrawals, Fraud",English,negative,6
+PostgreSQL,2021-11-04_Statement.pdf,Banking,,0,,"Personal Finances, Credit Cards, Loans, Investments",en,neutral,29
+PostgreSQL,2021-12-03_Statement.pdf,Financial Statement,,0,,"Salary, Energy Bills, Credit Card Payments, Loan Repayments, Standing Instructions, Insurance Premiums",English,neutral,9
+PostgreSQL,2022-01-03_Statement.pdf,Finance/Banking,,0,,"Account Management, Financial Transactions, Banking Services",English,neutral,10
+PostgreSQL,2022-05-11_Statement.pdf,Financial Services,,0,,"Commercial Banking, Interest Rates, Overdrafts, FSCS Protection",English,positive,7
+PostgreSQL,2022-08-12_Statement.pdf,Financial Services,,0,,"Account Information, Payment Methods, Customer Service",English,positive,46
+PostgreSQL,2022-09-03_Statement.pdf,Personal Finance,,0,,"Account Activities, Financial Transactions, Loans",English,neutral,8
+PostgreSQL,2022-09-13_Statement.pdf,banking/finance,,0,,"account numbers, credit limit, statement date, balance, transactions, fees and charges, minimum payment, customer service",english,neutral,52
+PostgreSQL,2022-10-22_Statement.pdf,Financial Statement,,0,,"Account Balance, Credit Limit, Transaction History, Payment Methods, Customer Service",English,neutral,12
+PostgreSQL,2025-06-16_Advice (1).pdf,banking,,0,,"fund transfer, credit advice, account details",en,positive,1
+PostgreSQL,2025-06-16_Advice.pdf,Financial Transactions,,0,,"Fund Transfer Credit Advice, Payment Details",English,neutral,1
+PostgreSQL,2025-07-03_Statement.pdf,Financial Transactions,,0,,"Deposits, Withdrawals, Balance",English,neutral,13
+PostgreSQL,2025-07-10_Advice (1).pdf,banking,,0,,"fund transfer credit advice, customer service contact",English,neutral,1
+PostgreSQL,2025-07-10_Advice.pdf,Financial Services,,0,,"Fund Transfer, Account Updates, Customer Service",English,neutral,1
+PostgreSQL,209835320548 (1).pdf,帳單/收費通知,,0,,"戶費, 繳款, remainder, 收費總額, 人数, 每日平均用水量, 按金款额, 爭議金額, 分期付款金額, 付清金額, 付款限期",zh-tw,neutral,4
+PostgreSQL,209835320548.pdf,帳單/收費,,0,,"收費通知, 繳款信息, 用戶編號, 每日平均用水量, 抄錶度數",zh,neutral,4
+PostgreSQL,220865515290.pdf,General,,0,,General,English,neutral,4
+PostgreSQL,22092020154827-0001.pdf,Unknown,,0,,Unknown,Unknown,Unknown,1
+PostgreSQL,2261307872023.pdf,real_estate,,0,,"business_transaction, accounting_details, property",de,positive,1
+PostgreSQL,24L9YGHU0T (1).txt,security,,0,,"security, product review, technical evaluation",en,neutral,4
+PostgreSQL,24L9YGHU0T (2).txt,Unknown,,0,,Unknown,Unknown,neutral,4
+PostgreSQL,24L9YGHU0T.txt,main category,,0,,"topic1, topic2, topic3",English,neutral,4
+PostgreSQL,2-job-description-examples.docx,Job Descriptions,,0,,"Office Assistant/Typist, Warehouse Assistant",English,neutral,1
+PostgreSQL,323 File Specification CFBC (w.e.f. 20201019).pdf,securities,,0,,"securities reference data, trading session status data, securities full order book data, securities market odd lot order data",english,neutral,57
+PostgreSQL,323 File Specification CFBC (w.e.f. 20210531).pdf,securities market,,0,,"historical data, update history",en,neutral,67
+PostgreSQL,661632093502 (1).pdf,房地产,,0,,"生活费用, 缴费记录, 用水情况",Chinese,neutral,4
+PostgreSQL,661632093502.pdf,用户,,0,,"地址, 付款记录, 用水情况, 费用计算",zh-Hans,中性,4
+PostgreSQL,819454726260 (1).pdf,Water/Utility Services in Hong Kong,,0,,"Water Consumption, Billing and Charges, Payment Terms",English,neutral,3
+PostgreSQL,819454726260.pdf,Utilities,,0,,"Water Consumption, Billing Information, Payment Details",en,positive,3
+PostgreSQL,9022006161738 (1).pdf,门票,,0,,"门票购买日期, 订单号, 购买日期",中文,neutral,60
+PostgreSQL,9022006161738.pdf,entertainment,,0,,"tickets, purchases, reservation",zh_cn,neutral,60
+PostgreSQL,â}âjâàâAâï.pdf,Video Player,,0,,"JavPlayer, Installation, Features, 2D Mode, 3D Mode, Environment Settings, File Browser, Range Setting, Keyboard Shortcuts, Capture Functionality, VR Mode",Japanese,neutral,28
+PostgreSQL,Acces_Cinema-Vox_GB.pdf,Ski Passes and Access,,0,,"Mont-Blanc Ski Pass, Cinema Vox Access, Validity Periods, Usage Rules",fr,positive,1
+PostgreSQL,Acces_Planards_MBM_GB.pdf,Promotions,,0,,"Promotion, Free ride offer, Conditions for free rides, MBM MultiPass, Validity period",fr,positive,1
+PostgreSQL,ACTIVATION_CODE.txt,General,,0,,General,English,neutral,5
+PostgreSQL,AddTrustExternalCARoot.txt,main category,,0,,Unknown,base64,neutral,3
+PostgreSQL,ApplicationConfirmation.pdf,border control (关控),,0,,"申请流程, 处理日期和时间, 付款详细资料, 申请编号, 申请状态, 付款方式, 内地部门处理进度",Chinese,negative/ slightly negative,3
+PostgreSQL,Application-Form-COVID19-Emergency-Assistance-Scheme.docx,Donation/Assistance Schemes,,0,,"Application Form, Financial Declaration, Support for Students, Submission Methods",English,positive,4
+PostgreSQL,AppointmentConfirmation (1).pdf,vehicle registration,,0,,"appointment confirmation, file requirements, contact information, personal information",Chinese,neutral,3
+PostgreSQL,AppointmentConfirmation (2).pdf,Vehicle Licensing,,0,,"Appointment Booking for Vehicle Licence Renewal, Transfer of Vehicle Ownership",English,positive,2
+PostgreSQL,AppointmentConfirmation.pdf,政府/官方文档,,0,,"預約確認, 所需文件, 時間及地點",zh,中性,3
+PostgreSQL,Atlassian_Quote_AT-224203620.pdf,Software Licensing & Support,,0,,"Payment Methods, Product Details, Support Information",English,positive,4
+PostgreSQL,AUTHORS.txt,Software,,0,,"Software Development, Logo Design",en,neutral,1
+PostgreSQL,b202412061.pdf,Legal,,0,,Legal Regulations on Critical Infrastructure,English,positive,236
+PostgreSQL,Bmcpc Booking - Bookingview Booking.pdf,殡葬,,0,," bone灰存放,  预约流程,  预约编号,  QR码,  服务类型,  日期时间,  姓名,  联系电话,  邮箱地址,  先人信息, 墓地编号",zh-Hans,neutral,2
+PostgreSQL,BookingReferenceNo_21July.pdf,交通/出行,,0,," vehicle reservation, 通行许可证, 预约安排",zh_cn,neutral,2
+PostgreSQL,BookingReferenceNo.pdf,Transportation,,0,,"Vehicle Reservation, Closed Road Permits, Transportation in Hong Kong, Reservation System Conditions",en,neutral,2
+PostgreSQL,bp (1).pdf,Operational Policies,,0,,"Baggage & Checked Baggage, Cabin Baggage Allowances & Restrictions",English,neutral,1
+PostgreSQL,bp (2).pdf,Travel & Transportation,,0,,"Travel Planning, Baggage, Security Checks, Cabin Allowance",English,neutral,1
+PostgreSQL,bp (3).pdf,Travel Services,,0,,"Changes in Reservations and Boarding Pass Validity, Required Travel Documents for Security Check, Seat Number Changes Due to Operational Reasons, Cabin Baggage Allowance Limits, Cabin Baggage Dimensions, Getting to the Airport Procedures, Airport Security Check Requirements, Boarding Process Details, Departure Instructions",tr,neutral,1
+PostgreSQL,bp (4).pdf,Travel Information,,0,,"Baggage Information, Security Check, Boarding Process, Departure Instructions",English,neutral,1
+PostgreSQL,bp.pdf,Operational Policies,,0,,"Baggage & Checked Baggage, Cabin Baggage Allowance, Cabin Baggage Dimensions",turkish,neutral,1
+PostgreSQL,build_info.txt,Development Logs,,0,,Build Process,en,neutral,1
+PostgreSQL,BYD M6 Brochure.pdf,新能源汽车,,0,,"续航能力, 舒适性, 技术规格",中文,中立,22
+PostgreSQL,CA Bundle.txt,cryptography,,0,,"public-key cryptography, digital signatures",unknown,neutral,10
+PostgreSQL,CarRegisteration_TZ6327_20160410.pdf,N/A,,0,,N/A,N/A,N/A,1
+PostgreSQL,CertificateOfInsurance.pdf,Health Insurance,,0,,"Health Insurance Benefits, Policy Details, Company Information",English,neutral,1
+PostgreSQL,Choosing the Right Files to Install.txt,Server SSL Installation,,0,,"Server SSL Installation, CER - CRT Files, Plain Text Files, PKCS7 File",en,neutral,1
+PostgreSQL,cigna-code-of-conduct 1220.pdf,corporate_ethics_governance,,0,,"health_well-being, supplier_management, money_laundering, equal_employment, open_communication, safety_workplace",english,positive,28
+PostgreSQL,Cigna Information Protection Pointer.pdf,Information Protection,,0,,"Software Use and Compliance, Software Licensing and Unauthorized Use, Account Security and Password Management, Email Communication and Data Handling, Misconduct and Ethical Behavior, Inappropriate Behavior or Workplace Etiquette, Communication Channels and Technology Use, IT Security and Device Management",English,positive,2
+PostgreSQL,cityguide_geneva_zo.pdf,Geneva Tourism,,0,,"Geography, Culture, Attractions, Points of Interest",English,positive,25
+PostgreSQL,Conflict of Interest Disclosure Statement.pdf,Ethics & Conflict of Interest,,0,,Conflict of Interest,English,neutral,1
+PostgreSQL,content.pdf,Unknown,,0,,Unknown,Unknown,Unknown,1
+PostgreSQL,COPYING.txt,software licenses,,0,,"freedom in software, copyright, distribution, modification, patents, license details",en,positive,10
+PostgreSQL,COURIER-ARRANGEMENT-FOR-BARCLAYS-MOONTREKKER-2019 (1).docx,Charity/Raffle,,0,,"Fundraising, Charity Events, Hong Kong, Event Details",English,neutral,4
+PostgreSQL,COURIER-ARRANGEMENT-FOR-BARCLAYS-MOONTREKKER-2019.docx,fundraising/donations,,0,,"courier arrangements, payment methods, delivery details, event purpose",English,positive,4
+PostgreSQL,DC_lukc3.pdf,教育,,0,,"学生津贴, 申请表, 学生资料, 申请人资料",中文,neutral,19
+PostgreSQL,Document_20240305_0001.pdf,Unknown,,0,,Unknown,Unknown,Unknown,1
+PostgreSQL,driverUndertaking_Sample_new_Cn.pdf,香港特别行政区法律 & 交通管理,,0,,"香港特别行政区政府, 港车北上, 指定司機, 交通法规",zh-Hans,neutral,4
+PostgreSQL,e6-specs-ch.pdf,新能源汽车,,0,,"比亚迪E6, 新能源汽车配置, 电池技术, 续航里程, 充电设施",zh,positive,15
+PostgreSQL,eadvice-2018_12_11_22_51_29.pdf,Financial/Banking Advice,,0,,"Telegraphic Transfers, Hong Kong Banking",formal,neutral,2
+PostgreSQL,Employee Certification of Anti-Corruption Compliance.pdf,anti-corruption compliance,,0,,"FCPA, anti-bribery laws, gift and payment compliance, non-compliance risks",en,neutral,2
+PostgreSQL,Employment_Contract.pdf,Other,,0,,Unknown,unknown,neutral,1
+PostgreSQL,Envoy Registration Guide APAC ENG.pdf,Health Insurance,,0,,"Registration, Claim Submission, Policy Documents, Healthcare Facilities",English,neutral,4
+PostgreSQL,e-service2_id_replacement_appointment_chan_pui_yu.pdf,Identity Card,,0,,"3 March 2021 (Wed) 9:05 pm HK Time, 6782 1030 3101 3558",English,neutral,1
+PostgreSQL,e-service2_id_replacement_appointment_luk_yu_fei.pdf,Government Services,,0,,"Appointment for Replacement of Hong Kong Identity Card, Hong Kong Time",en,positive,1
+PostgreSQL,eStatement_1544539770160.pdf,finance/banking,,0,,"credit card information, account balances, transaction records",zh_cn,neutral,10
+PostgreSQL,eStatement_1544539962183.pdf,金融服务,,0,,"信贷额度, 存款, 贷款支付, 转账记录",zh_cn,neutral,10
+PostgreSQL,eStatement_1544540184263.pdf,金融,,0,,"储蓄及投资, 信用卡, 交易记录",zh,neutral,13
+PostgreSQL,eStatement_1562032930931.pdf,Finance,,0,,"Loans, Mortgages, Payment Records",zh-HK,neutral,4
+PostgreSQL,eStatement_1562032971772.pdf,信貸,,0,,"貸款結單, 還款紀錄, 貸款資料",zh_cn,neutral,7
+PostgreSQL,eStatement_1582904054862.pdf,貸款,,0,,"房貸, 還貸紀錄, 利率調整",Chinese,neutral,4
+PostgreSQL,eStatement_1582904102027.pdf,貸款/信貸,,0,,"房貸, 还款记录, 貸款信息",Chinese,neutral,7
+PostgreSQL,eStatement_1609037170519.pdf,banking/finance,,0,,"credit card transactions, monthly expenses, balance tracking",English,positive,11
+PostgreSQL,eStatement_1609037293515.pdf,finance/banking,,0,,"credit card transactions, bank account activity, recurring payments",english,neutral,11
+PostgreSQL,eStatement_1609037325316.pdf,financial services,,0,,"banking transactions, credit cards, international payments",English,neutral,11
+PostgreSQL,eStatement_1609037349462.pdf,banking/finance,,0,,"credit card transactions, spending patterns, financial services usage",English,neutral,13
+PostgreSQL,eStatement_1627534115221.pdf,银行账户,,0,,"支票戶口, 储蓄及投資戶口, 信用卡戶口",zh,neutral,10
+PostgreSQL,eStatement_1627534384764.pdf,银行/金融服务,,0,,"支票戶口, 儲蓄及投資戶口, 信用卡戶口, 轉存记录, 交易记录",中文,中性,10
+PostgreSQL,eStatement_1654150871801.pdf,信貸,,0,,"貸款結單, 貸款資料, 還款紀錄",zh-Hans,neutral,13
+PostgreSQL,eStatement_1655185391182.pdf,finance,,0,,"Mortgage, Interest Rate, Installment Amount, Loan Balance",zh_cn,neutral,6
+PostgreSQL,FitFileRepairTool-FAQ.pdf,Fit & Repair Tool,,0,,"Data Correction, Record Deletion, File Splitting, File Merging, Missing Information, Corrupted Files, Licensing",en,neutral,8
+PostgreSQL,Fit File Repair Tool Manual.pdf,software,,0,,"file repair, data recovery, user manual",en,neutral,84
+PostgreSQL,FlyLuk_17-07-2024.pdf,健康/医疗,,0,,"血糖监测, 个人健康数据, 设备信息",zh,neutral,5
+PostgreSQL,Fly+Luk (1).docx,IT Development,,0,,"Project Management, IT Development, Leadership, DevOps, Cloud Solutions, Mobile 1st Design, Agile Development, Enterprise Data Lake, Pivotal Cloud Foundry, Blockchain CI/CD Pipeline",Chinese,positive,6
+PostgreSQL,Fly+Luk (2).docx,IT Professional,,0,,"IT Development, Project Management, Agile Development, Technology Stack",English,positive,6
+PostgreSQL,flyluk_com.txt,X.509 Certificate,,0,,"Digital Certificates, Public Key Infrastructure (PKI), Binary Data",Binary,neutral,4
+PostgreSQL,Fly+Luk.docx,IT,,0,,"IT Development Lead, Life Insurance IT systems, Retail Banking IT systems, DevOps, Cloud Solutions, Mobile 1st Design, Big Data, Agile Development, Project Management, Technical Skills, Multi-vendor Integration, Enterprise Data Lake, Pivotal Cloud Foundry, Blockchain DevOps CI/CD pipeline, Java EE architecture design, Performance tuning, Sybase, DB2, Transact-SQL, UML, RAD, WebSphere products, PMP Course, SOX 404",English,positive,6
+PostgreSQL,github-recovery-codes (1).txt,network data,,0,,Unknown,unknown,neutral,1
+PostgreSQL,Global Employee Privacy Notice English Version.pdf,Legal,,0,,"Employee Privacy Notice, Employee Benefits/HR Policies",English,positive,9
+PostgreSQL,group-hospitalization-surgical-claim-form (1).pdf,medical form,,0,,"hospitalization claims, medical forms, insurance information, signature sections",Chinese with English text,neutral,18
+PostgreSQL,group-hospitalization-surgical-claim-form.pdf,Healthcare,,0,,"Hospitalization, Surgery, Insurance Claims",Chinese,neutral,18
+PostgreSQL,History.txt,software updates,,0,,"bug fixes, feature enhancements, usability improvements, performance boosts, compatibility changes",English,positive,1
+PostgreSQL,How-to-Windsurf-101-Complete-Ebook-2nd-Edition.compressed.pdf,safety,,0,,"Safety in Windsurfing, Rules of Right of Way, Rules of Right of Way in Waves, How to Get Back to the Shore if the Wind Drops, Avoid Sunburn, How to Start Windsurfing",English,positive,107
+PostgreSQL,HR066 (Sep 2020-V1.3) Health Declaration Novel Coronavirus Infection.pdf,public_health,,0,,"COVID-19_infection, health_declaration, travel_history, family_contact, household_residence, childcross_boundary, building_estate",zh_cn,neutral,7
+PostgreSQL,HRONB14 - Declaration of Interest and Secondary Employment HR-035.pdf,Personal-IN-Confidence,,0,,"Financial/Share-holding Interest, Occupational Relationships, Professional Memberships, Secondary Employment, Directorship/Executive Appointments, Company/Organisation Memberships, Gambling/Betting Membership",Chinese,neutral,5
+PostgreSQL,-IN202265372.pdf,e-commerce,,0,,"payment methods, delivery options, product details",English,neutral,4
+PostgreSQL,index_delayed_ui (1).pdf,Legal,,0,,"Editorial introduction, Cases in which service of writ out of jurisdiction is permissible (O.11, r.1), Forum conveniens (service out and stay cases), Anti-suit injunctions, Particular gateways of rule 1(1), Application for leave to serve out of jurisdiction (O.11, r.4), Applications for stay or to set aside the order or service, Service of writ out of jurisdiction: general (O.11, r.5), Service of writ in the Mainland or Macao through judicial authorities (O.11, r.5A), Service of writ abroad through foreign governments, judicial authorities and British consuls (O.11, r.6), Service of process on a foreign State (O.11, r.7), Service of writ in certain actions under Carriage by Air Ordinance (O.11, r.7A), Undertaking to pay expenses of service by the Chief Secretary (O.11, r.8), Undertaking to pay expenses of service by Registrar (O.11, r.8A), Service abroad of non-writ originating process and summonses, etc. in existing proceedings (O.11, r.9)",English,neutral,502
+PostgreSQL,index_delayed_ui.pdf,Legal Procedure,,0,,"International Legal Procedure, Service out of Jurisdiction, Forum Conveniende, Anti-Suit Injunctions, Particular Gateways, Application for Leave to Serve Out of Jurisdiction, Stay or Removal Orders, General Service of Writ, Service in Mainland or Macao, Service Abroad through Foreign Governments and British Consuls, Service on a Foreign State, Carriage by Air Ordinance, Payment of Expenses, Service of Non-Writ Processes",English,neutral,502
+PostgreSQL,Insurance customer - Enterprise ArchitectJD.pdf,Technology,,0,,"Enterprise Architect, IBM, Cloud Computing, Leadership, Technical Expertise",en,positive,1
+PostgreSQL,Job-description (1).docx,Job Description,,0,,"Job title, Department/Section, Main purposes of job, Key tasks, Key results/objectives, Responsible for staff/equipment, Reporting to… (name and title of line manager)",English,neutral,1
+PostgreSQL,Job-description.docx,employment,,0,,"Main purposes of job, Key tasks, Key results/objectives, Responsible for staff/equipment, Reporting to",English,neutral,1
+PostgreSQL,job-description-template-download-20201210.docx,Job Title,,0,,"Reports To, Job Overview",English,neutral,1
+PostgreSQL,LAUFEN_H2229530000401_en_INT.pdf,Bathroom Fixtures,,0,,"Bathtub Specifications, Installation Details, Water Capacity, Product Options",English,positive,2
+PostgreSQL,LICENSE_FrameCapturer.txt,Programming/Libraries,,0,,Image Processing,en,neutral,7
+PostgreSQL,LICENSE_uWindowCapture.txt,Legal,,0,,"MIT License, Copyright",English,neutral,1
+PostgreSQL,LUK_Ching Tsing_2017Sept_Paper.pdf,educational,,0,,"Uncertainty and Data, Quantity, Space and Shape, Change and Relationships",English,neutral,14
+PostgreSQL,Manual.pdf,Software,,0,,"JavPlayerTrial Manual, Installation, Uninstallation, Data Saving, Terms and Conditions, Basic Operations, Toolbar Usage, Range Specification, File Browser Functionality, Sequential Playback",en,neutral,10
+PostgreSQL,McMillan Running _ The World's Best Running Calculator.pdf,Running,,0,,"Coach's Notes, Best Running Calculator, SPORT PACES, Sprint PACES, McMillan Training",English,positive,6
+PostgreSQL,merges.txt,Technology,,0,,"AI, Machine Learning, Cloud Computing, Data Analysis, Cybersecurity, Software Development",en,positive,533
+PostgreSQL,merges.txt,Personal Development,,0,,"it, a, the, as, an, or, and, but, with, on, in, of, to, from",en,positive,533
+PostgreSQL,merges.txt,online shopping,,0,,"online shopping, product comparison, customer experience",en,mixed,625
+PostgreSQL,Moontrekker_Courier_Fee_Paymet_4Oct2019.pdf,Financial Transaction,,0,,"Foreign Exchange Services, Payment Processing",en,positive,1
+PostgreSQL,MTPN0121336-00-client.pdf,Insurance,,0,,"Motor Vehicle Insurance, Third Party Risks, Hong Kong Ordinances",English,neutral,56
+PostgreSQL,NEWS.txt,Software Updates,,0,,"TestDisk Improvements, PhotoRec & QPhotoRec Improvements, General Software Fixes",English,positive,12
+PostgreSQL,nke-10k-2023 (1).pdf,corporate governance and financial reporting,,0,,"Form 10-K, Nike, Inc., Oregon, Fiscal year ended May 31, 2023",English,neutral,485
+PostgreSQL,nke-10k-2023 (2).pdf,SEC filings,,0,,"Nike Inc., 10-K filing, SEC document",English,neutral,485
+PostgreSQL,nke-10k-2023 (3).pdf,Finance/Company Reports,,0,,"Corporate Governance, Financial Performance, Regulatory Compliance",English,neutral,485
+PostgreSQL,nke-10k-2023 (4).pdf,Common Stock,,0,,Financial Performance,English,neutral,485
+PostgreSQL,nke-10k-2023 (5).pdf,corporate governance and financial reporting,,0,,"annual report, securities registration, fiscal year,  incorporation details, regulatory filings",English,neutral,485
+PostgreSQL,nke-10k-2023 (6).pdf,Annual Report,,0,,"Nike, Inc., Class B Common Stock, SEC Form 10-K, Oregon",English,neutral,485
+PostgreSQL,nke-10k-2023.pdf,Securities,,0,,"Nike Inc., Oregon, Annual Report (Form 10-K) - Fiscal Year Ended May 31, 2023",English,neutral,485
+PostgreSQL,OCP.WKS49.230706.SAL648.pdf,娱乐/休闲,,0,,"地址, 联系信息, 停车费用, 订单, 条款",中文,neutral,5
+PostgreSQL,OCP.WKS49.250421.SAL24.pdf,娱乐/旅游,,0,,"入园准备, 门票类型与使用, 休园日安排, 儿童票规定",中文,中性,17
+PostgreSQL,Online_help_of_the_monitoring.pdf,Software Monitoring Tools,,0,,"Software Monitoring, Application Performance, Root Cause Analysis",English,positive,11
+PostgreSQL,P09_Membership_enrolment_form_PTC.pdf,strong accumulation plan,,0,,"contract information, member details, scheme information",Chinese,neutral,66
+PostgreSQL,Pre-Onboarding Form_ HR-400_v2.4.pdf,Employee Onboarding,,0,,"Personal Data, Nationality, Education, Employment, Address, Bank Account, Dependents, Emergency Contact",Chinese,neutral,19
+PostgreSQL,! PRIVATE KEY INFO !.txt,cybersecurity,,0,,"private key location, how to find private key, reissuing certificate",en,neutral,1
+PostgreSQL,Profile---Fly-Luk-v1.9.docx,Technology & IT,,0,,"IT Development, Digital Experience, Project Management, DevOps, Cloud Solutions, Mobile Design, Big Data",English,positive,6
+PostgreSQL,Profile_Fly_Luk_v3.docx,Technology professional,,0,,"Software Engineering, DevOps, Agile Methodology, Cloud-Native Development, Enterprise Architecture, Project Management, Multi-Vendor Integration, Digital Transformation","English, Mandarin, Cantonese",positive,6
+PostgreSQL,psol_GC_NR4AG_13632251_MFC_20210105_56019599_all_xml_000593_32257696124_YuFei_Luk.pdf,Programming/Software Development,,0,,"C++ Programming, Object-Oriented Programming, Advanced C++ Concepts",Professional/Technical,neutral,21
+PostgreSQL,psol_GC_NR4AG_13632251_MFC_20220110_56511576_all_xml_003547_32257696124_YuFei_Luk.pdf,General,,0,,"C53, C65, C72",Chinese,Neutral,21
+PostgreSQL,psol_GC_T5008_13632251_MFC_20220119_56532777_all_xml_000518_32257696124_YuFei_Luk (1).pdf,Information Technology,,0,,"Information Technology, Data Structures, Software Engineering",English,neutral,18
+PostgreSQL,psol_GC_T5008_13632251_MFC_20220119_56532777_all_xml_000518_32257696124_YuFei_Luk.pdf,Tech,,0,,"GPU, Memory, Storage, Operating System, Performance Metrics, Power Consumption",en,positive,18
+PostgreSQL,pve-admin-guide-7.pdf,Proxmox VE,,0,,"Central Management, Flexible Storage, Integrated Backup and Restore, High Availability Cluster, Flexible Networking, Integrated Firewall, Hyper-converged Infrastructure, Why Open Source, Your benefits with Proxmox VE, Getting Help, Project History, Improving the Proxmox VE Documentation, Translating Proxmox VE",en,neutral,626
+PostgreSQL,QD_201907_971-61301-9453-1-14 (1).pdf,Rates/Billing,,0,,"Account Number, Payer's Name and Address, Tenement Details, Assessment Information, Payment History",en,neutral,7
+PostgreSQL,QD_201907_971-61301-9453-1-14.pdf,account,,0,,"account number, assessment number, registered payer details, rates concession",en,neutral,7
+PostgreSQL,QD_202304_971-61301-9453-1-14.pdf,财务/税务,,0,,"差额和地租缴纳, 缴款日期, 逾期费用, 支付方式",zh,neutral,7
+PostgreSQL,QD_202307_971-61301-9453-1-14 (1).pdf,财务,,0,,"差额税, 地租",中文,neutral,8
+PostgreSQL,QD_202307_971-61301-9453-1-14.pdf,税务,,0,,"差额税, 地租, 缴纳日期",English,neutral,8
+PostgreSQL,qfs1.td.gov.hk_hzmbz_booking_booking.do_method=printBookingDetails.pdf,Transportation,,0,,"appointment details, status updates, documents required, contact information, travel arrangements",Chinese,neutral,2
+PostgreSQL,rBXKjWWwrz-ALC7gACW22LI-zTQ178 (1).pdf,Technology,,0,,"System Status Updates, Performance Metrics",non-English,neutral,1
+PostgreSQL,rBXKjWWwrz-ALC7gACW22LI-zTQ178 (2).pdf,General,,0,,"PDT-T-SIL-492, CLRFA08VT",en,neutral,1
+PostgreSQL,rBXKjWWwrz-ALC7gACW22LI-zTQ178.pdf,Healthcare,,0,,"Patient Tracking, Medical Records",English,neutral,1
+PostgreSQL,readme.txt,Software Templates/Themes,,0,,"Purchase, Updates, Documentation, Support",English,positive,1
+PostgreSQL,readme.txt,Technology,,0,,"External Libraries, Repository Availability, Software Development",English,neutral,1
+PostgreSQL,readme.txt,security software,,0,,"system requirements, downloads, installation instructions, documentation availability, version history",English,neutral,1
+PostgreSQL,README.txt,软件激活,,0,,"Jetbrains Activation Code, License Server Crack, Java Agent配置, IDE版本管理",中文,neutral,9
+PostgreSQL,Repayment of Buyout Period (1).pdf,Financial Services,,0,,"Payment Processing, Service Updates, Financial Transactions",English,positive,1
+PostgreSQL,Repayment of Buyout Period.pdf,Financial Services,,0,,"FX Services, Payment Processing, Investment Management",English,neutral,1
+PostgreSQL,requirements.txt,dependencies,,0,,"python-dependencies, machine-learning, web-development",en,positive,1
+PostgreSQL,resaNavette8118147.pdf,Reservations,,0,,"Date: 31/08/2018, Time: 07:00, Location: Chamonix - Courmayeur, Contact Information: Phone number: 8118147-738470",French,neutral,1
+PostgreSQL,Runner_guide_UTMB_2018_English_HD.pdf,Trail Running Events,,0,,"UTMB ® History and Growth, Organizational Efforts and Volunteers, Event Experience and Spirit",English,positive,66
+PostgreSQL,SD_202101_971-61301-9453-1-14.pdf,Government Rent,,0,,"Demand for Rates, Account Number, Payer Information, Address Details, Payment Amounts",Simplified Chinese,neutral,11
+PostgreSQL,SectigoRSADomainValidationSecureServerCA.txt,Certificates,,0,,"Digital Certificates, Web Security, CA (Certificate Authority)",English,neutral,4
+PostgreSQL,SGArrivalCard_150920230034.pdf,Travel and Immigration,,0,,"Passport Information, Health Declaration, Travel Details, Prohibited Items",zh_cn,neutral,3
+PostgreSQL,shasum.txt,Software Agents,,0,,Unknown,unknown,neutral,1
+PostgreSQL,Software-Update-Guide.docx,Software Update,,0,,"Online Update, Offline Update",English,neutral,1
+PostgreSQL,SPECS.pdf,汽车,,0,,"产品外观, 车辆规格",中文,neutral,35
+PostgreSQL,S&P - Greenery 19F-s.pdf,Unknown,,0,,Unknown,Unknown,Unknown,1
+PostgreSQL,statement_202311.pdf,Financial Transactions,,0,,Tunnel Fees,Chinese,neutral,4
+PostgreSQL,TAX_FORM_PIS000000396-001-HK_1061537_20242025.pdf,Tax Return,,0,,"Employment Details, Personal Information, Income Sources, Supplementary Data on Salaries and Bonuses",English,neutral,3
+PostgreSQL,td51_e-fillable_eng.pdf,国际驾驶许可,,0,,"国际驾驶许可申请, 申请流程, 所需材料",中文,neutral,36
+PostgreSQL,td558_(2_2021)_e-fillable_eng.pdf,香港车辆登记,,0,,"车辆登记签名要求, 地址证明, 变更地址通知",中文,neutral,52
+PostgreSQL,td558_e-fillable_eng.pdf,Legal Requirements,,0,,"Verification of E-contact Means, Transfer of Ownership of a Vehicle (Except Taxi), Signature and Chop on Vehicle Registration Document (VRD), Requirement of Address Proof, Change of Address or E-contact Means, Mail Items with Insufficient Postage",formal_and_official,neutral_with_slight_negative_connotation,60
+PostgreSQL,testdisk.pdf,Software Documentation,,0,,"Partition recovery, Filesystem repair, File recovery, PhotoRec, QPhotoRec, Installation, Building from source, Live USB, Storage considerations, Starting the tools",English,neutral,92
+PostgreSQL,test.pdf,Language Learning,,0,,The quick brown fox jumps over the lazy dog,English,neutral,1
+PostgreSQL,THANKS.txt,Software/Technology,,0,,"TestDisk & PhotoRec, Contributions to the Project",English,positive,1
+PostgreSQL,TNF100_HK2015_PRESSRELEASE.docx,endurance challenges,,0,,"Asia's most grueling endurance challenge, Nanjing Face® 100 Hong Kong, World's toughest trail running race, Hilliest and most challenging trail running in Asia, Asian series event, 100 km course with 6,300m elevation gain, 50 km course with 3,075m elevation gain, Over 1,000 runners from Asia and beyond, Top contenders from the 2015 TNF100 Asia Pac Series, Challenging training program for 30 participants, Charity support for local causes",Chinese,positive,10
+PostgreSQL,translantau_2017_classement_TL100_scratch.pdf,Marathon Results,,0,,"Sports, Race Results, Participant Categories",en,positive,170
+PostgreSQL,translantau_2017_classement_TL50_scratch.pdf,Sports,,0,,Sports Results,English,neutral,184
+PostgreSQL,translantau_2018_classement_TL100_scratch.pdf,Sports,,0,,"Rankings, Bib Numbers, Names of Participants, Clubs/Teams, Categories, Countries",English,neutral,149
+PostgreSQL,TZ6327交强险保单.pdf,insurance,,0,,"insurance single, vehicle information, coverage details, general terms",zh_cn,neutral,6
+PostgreSQL,TZ6327商业险保单.pdf,保险/金融,,0,,"保险单, 车辆信息, 保险金额, 投保人信息",zh_cn,neutral,15
+PostgreSQL,USERTrustRSAAddTrustCA.txt,certificate,,0,,"digital certificate, public key infrastructure (PKI), X.509",en,neutral,4
+PostgreSQL,version.txt,General,,0,,General,English,neutral,1
+PostgreSQL,VERSION.txt,Software Development,,0,,Unknown,en,neutral,1
+PostgreSQL,vocab.txt,Unknown,,0,,Unknown,Unknown,Unknown,213
+PostgreSQL,vocab.txt,nlp,,0,,"data_preprocessing, tokenization, model_training",english,neutral,213
+PostgreSQL,WixLicenseNote.txt,Legal,,0,,"Microsoft Reciprocal License (Ms-RL), WiX Toolset 3.10 software, Chipset Device Software",en,neutral,2
+PostgreSQL,城市售票網 - 確認紀錄 father .pdf,演出/票务,,0,,"演出名称, 场地, 日期",中文,中性,7
+PostgreSQL,城市售票網 - 確認紀錄.pdf,娱乐/票务,,0,,"演出名称, 场地, 日期, 购票方式",zh_cn,neutral,7
+PostgreSQL,【安卓+PC】天马3.5 正式版安装教程 20220704.pdf,游戏与软件,,0,,"游戏ROM简介, 游戏主题简介, PC安装教程",zh_cn,neutral,166
+PostgreSQL,授权委托公证书 (更新最終草稿) (10.10.2019).docx,法律,,0,,"授权委托公证书, 房产所有权, 代理权限, 税务处理, 房产登记",zh_cn,neutral,5
+PostgreSQL,机动车交通事故责任强制保险条1.pdf,机动车交通事故责任强制保险,,0,,"交强险条款, 保险责任, 垫付与追偿, 保险期间, 投保义务, 赔偿处理, 合同变更与终止",zh_cn,neutral,18
+PostgreSQL,机动车商业保险免责事项说明1.pdf,财产保险,,0,,"机动车商业保险, 免责事项说明书, 保险条款",zh_cn,neutral,50
+PostgreSQL,机动车商业保险示范条款（2020 版1.pdf,财产保险,,0,,"机动车损失保险, 第三者责任保险, 车上人员责任保险",zh_cn,neutral,72

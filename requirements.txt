@@ -3,11 +3,12 @@ langchain-ollama
 langchain-community
 langchain
 langchain-chroma
+langchain_postgres
 pydantic
 streamlit
 pypdf
 requests
 docx2txt
-chromadb
-langchain_postgres
 psycopg2-binary
+tiktoken
+docling

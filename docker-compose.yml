@@ -14,6 +14,13 @@ services:
       - gpus=all
       - OPENWEATHER_API_KEY=bab87f014e91b33605cf8c69dc3db86d
       - ENV=dev
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]    
     networks:
       - deepseek
     hostname: open-webui
@@ -82,31 +89,52 @@ services:
     hostname: docling
     restart: unless-stopped
 
-  development:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev   # Ensure you have a Dockerfile.dev at the root of your project.
-    volumes:
-      - .:/workspace   # Mounts your working directory inside the container.
-      - /mnt/c/Users/flyluk/Downloads:/workfiles
-      - /home/fly/development:/development
-
+  vllm:
+    image: vllm/vllm-openai:latest
     ports:
-      - "8000:8000"   # Adjust or add additional ports as needed.
+      - "8000:8000"
+    volumes:
+      - "vllm_cache:/root/.cache/huggingface"
     environment:
-      - ENV=development
-      - DATABASE_URL=postgresql://raguser:ragpassword@postgres:5432/vectordb
-      - DOCLING_URL=http://docling:5001
-      - OPENWEBUI_URL=http://open-webui:8080
-      - OLLAMA_API_URL=http://ollama:11434
-           
+      - HUGGING_FACE_HUB_TOKEN=${HF_TOKEN}
+    command: --model Qwen/Qwen3-4B-Instruct-2507-FP8 --host 0.0.0.0 --port 8000 --max-model-len 8192 --gpu-memory-utilization 0.8
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     networks:
       - deepseek
-    hostname: development
+    hostname: vllm
     restart: unless-stopped
-    depends_on:
-      - postgres
-      - docling
+
+  # development:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.dev   # Ensure you have a Dockerfile.dev at the root of your project.
+  #   volumes:
+  #     - .:/workspace   # Mounts your working directory inside the container.
+  #     - /mnt/c/Users/flyluk/Downloads:/workfiles
+  #     - /home/fly/development:/development
+
+  #   ports:
+  #     - "8000:8000"   # Adjust or add additional ports as needed.
+  #   environment:
+  #     - ENV=development
+  #     - DATABASE_URL=postgresql://raguser:ragpassword@postgres:5432/vectordb
+  #     - DOCLING_URL=http://docling:5001
+  #     - OPENWEBUI_URL=http://open-webui:8080
+  #     - OLLAMA_API_URL=http://ollama:11434
+           
+  #   networks:
+  #     - deepseek
+  #   hostname: development
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - postgres
+  #     - docling
 networks:
   deepseek:
     driver: bridge
@@ -117,4 +145,6 @@ volumes:
   ollama:
     external: true
   postgres_data:
+    external: true
+  vllm_cache:
     external: true

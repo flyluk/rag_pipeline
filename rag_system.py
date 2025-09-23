@@ -3,6 +3,7 @@ import json
 import re
 import shutil
 import requests
+import time
 from typing import List, Dict, Any
 from datetime import datetime
 from langchain_ollama import OllamaLLM
@@ -17,16 +18,51 @@ class DocumentTags(BaseModel):
     sentiment: str = Field(description="Sentiment of the document", enum=["positive", "negative", "neutral"])
     language: str = Field(description="Language of the document")
 
+class TimingTracker:
+    def __init__(self):
+        self.start_time = time.time()
+        self.item_times = []
+        self.item_start = None
+    
+    def start_item(self):
+        self.item_start = time.time()
+    
+    def end_item(self, item_name: str = ""):
+        if self.item_start:
+            elapsed = time.time() - self.item_start
+            self.item_times.append((item_name, elapsed))
+            return elapsed
+        return 0
+    
+    def get_stats(self) -> Dict[str, Any]:
+        total_elapsed = time.time() - self.start_time
+        avg_time = sum(t[1] for t in self.item_times) / len(self.item_times) if self.item_times else 0
+        return {
+            "total_elapsed": total_elapsed,
+            "average_per_item": avg_time,
+            "items_processed": len(self.item_times),
+            "item_times": self.item_times
+        }
+
 class RAGSystem:
-    def __init__(self, model_name: str = "deepseek-r1:7b", upload_dir: str = "uploaded_files",
-                 openwebui_base_url: str = "http://localhost:3000", openwebui_api_key: str = ""):
+    def __init__(self, model_name: str = "deepseek-r1:8b", upload_dir: str = "uploaded_files",
+                 openwebui_base_url: str = "http://localhost:3000", openwebui_api_key: str = "",
+                 openwebui_api_key_file: str = "", use_docling: bool = True):
         self.model_name = model_name
         self.upload_dir = upload_dir
         self.openwebui_base_url = openwebui_base_url
-        self.openwebui_api_key = openwebui_api_key
+        
+        # Load API key from file if provided, otherwise use direct key
+        if openwebui_api_key_file and os.path.exists(openwebui_api_key_file):
+            with open(openwebui_api_key_file, 'r') as f:
+                self.openwebui_api_key = f.read().strip()
+        else:
+            self.openwebui_api_key = openwebui_api_key
         
         # Create upload directory if it doesn't exist
         os.makedirs(upload_dir, exist_ok=True)
+        
+        self.use_docling = use_docling
         
         # Connect to your Ollama instance at the specified URL
         self.llm = OllamaLLM(
@@ -59,26 +95,84 @@ class RAGSystem:
             f.write(uploaded_file.getbuffer())
         return file_path
     
+    def find_documents(self, path: str) -> List[str]:
+        """Find all supported documents in path"""
+        from pathlib import Path
+        supported_exts = {'.pdf', '.docx', '.txt'}
+        documents = []
+        
+        path_obj = Path(path)
+        if path_obj.is_file():
+            if path_obj.suffix.lower() in supported_exts:
+                documents.append(str(path_obj))
+        else:
+            for file_path in path_obj.rglob('*'):
+                if file_path.suffix.lower() in supported_exts:
+                    documents.append(str(file_path))
+        
+        return documents
+    
     def load_document(self, file_path: str) -> List[Document]:
-        """Load document based on file extension"""
+        """Load document using appropriate method"""
+        start_time = time.time()
         file_extension = os.path.splitext(file_path)[1].lower()
         
+        # For text files, use TextLoader directly
+        if file_extension == '.txt':
+            loader = TextLoader(file_path, encoding='utf-8')
+            result = loader.load()
+            load_time = time.time() - start_time
+            print(f"Load time for {os.path.basename(file_path)}: {load_time:.2f}s (TextLoader)")
+            return result
+        
+        # Use docling if enabled
+        if self.use_docling:
+            try:
+                from docling.document_converter import DocumentConverter, InputFormat, PdfFormatOption
+                from docling.datamodel.pipeline_options import PdfPipelineOptions
+
+                pipeline_options = PdfPipelineOptions(do_ocr=False)
+                converter = DocumentConverter(
+                    format_options={
+                        InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_options)
+                    }
+                )
+                result = converter.convert(file_path)
+                content = result.document.export_to_markdown()
+                  
+                doc_result = [Document(
+                    page_content=content,
+                    metadata={'source': file_path}
+                )]
+                load_time = time.time() - start_time
+                print(f"Load time for {os.path.basename(file_path)}: {load_time:.2f}s (Docling)")
+                return doc_result
+            except Exception as e:
+                print(f"Docling failed for {file_path}: {e}, falling back to default loader")
+        
+        # Use default loaders
         if file_extension == '.pdf':
             loader = PyPDFLoader(file_path)
         elif file_extension == '.docx':
             loader = Docx2txtLoader(file_path)
-        elif file_extension == '.txt':
-            loader = TextLoader(file_path, encoding='utf-8')
         else:
             raise ValueError(f"Unsupported file type: {file_extension}")
         
-        return loader.load()
+        result = loader.load()
+        load_time = time.time() - start_time
+        loader_name = "PyPDF" if file_extension == '.pdf' else "Docx2txt"
+        print(f"Load time for {os.path.basename(file_path)}: {load_time:.2f}s ({loader_name})")
+        return result
     
     def process_documents(self, file_paths: List[str], original_filenames: List[str] = None) -> List[Document]:
         """Process multiple documents into chunks"""
         all_documents = []
+        timer = TimingTracker()
+        
+        print(f"Starting processing of {len(file_paths)} files...")
         
         for i, file_path in enumerate(file_paths):
+            timer.start_item()
             try:                
                 documents = self.load_document(file_path)
                 original_name = original_filenames[i] if original_filenames and i < len(original_filenames) else os.path.basename(file_path)
@@ -97,12 +191,21 @@ class RAGSystem:
                     doc.metadata['sentiment'] = tags.sentiment
                     doc.metadata['language'] = tags.language
                 all_documents.extend(documents)
-                print(f"Processed: {file_path}")
+                
+                item_time = timer.end_item(os.path.basename(file_path))
+                print(f"Processed: {os.path.basename(file_path)} ({item_time:.2f}s)")
             except Exception as e:
+                timer.end_item(f"{os.path.basename(file_path)} (ERROR)")
                 print(f"Error processing {file_path}: {str(e)}")
                 continue
         
-        print(f"Processed {len(all_documents)} documents")
+        stats = timer.get_stats()
+        print(f"\n=== Processing Complete ===")
+        print(f"Total elapsed: {stats['total_elapsed']:.2f}s")
+        print(f"Average per item: {stats['average_per_item']:.2f}s")
+        print(f"Items processed: {stats['items_processed']}/{len(file_paths)}")
+        print(f"Documents created: {len(all_documents)}")
+        
         return all_documents
     
     def summarize_document(self, document_path: str) -> str:
@@ -126,9 +229,12 @@ class RAGSystem:
         summary = self.llm.invoke(summary_prompt)
         return summary
     
-    def categorize_and_tag_document(self, document_path: str) -> DocumentTags:
+    def categorize_and_tag_document(self, document_path: str, documents: List[Document] = None) -> DocumentTags:
         """Categorize and tag a document"""
-        documents = self.load_document(document_path)
+        start_time = time.time()
+        
+        if documents is None:
+            documents = self.load_document(document_path)
         combined_content = "\n\n".join([doc.page_content for doc in documents])
         
         # Limit content to avoid context window issues
@@ -144,6 +250,9 @@ class RAGSystem:
             "language": "language of the document"
         }}
         
+        Consider the following example categories and topics:
+        Categories: "Financial Documents","Legal Documents","Technology Documents","Personal Development and Career","Travel and Immigration"
+
         Document content:
         {content_preview}
         
@@ -151,6 +260,8 @@ class RAGSystem:
         """
         
         response = self.llm.invoke(tagging_prompt)
+        categorize_time = time.time() - start_time
+        print(f"Categorization time for {os.path.basename(document_path)}: {categorize_time:.2f}s")
         
         # Try to extract JSON from response
         try:
@@ -277,6 +388,35 @@ class RAGSystem:
                 return kb
         raise ValueError(f"Knowledge base '{name}' not found")
     
+    def get_document_stats(self) -> Dict[str, Any]:
+        """Get statistics about uploaded documents"""
+        try:
+            docs = self.list_uploaded_documents()
+        except Exception:
+            return {"total_documents": 0, "knowledge_bases": 0, "file_types": {}, "total_size_bytes": 0, "total_size_mb": 0}
+        
+        if not docs:
+            return {"total_documents": 0, "knowledge_bases": 0, "file_types": {}, "total_size_bytes": 0, "total_size_mb": 0}
+        
+        kb_count = len(set(doc['knowledge_base'] for doc in docs))
+        file_types = {}
+        total_size = 0
+        
+        for doc in docs:
+            # Extract file extension
+            filename = doc['filename']
+            ext = filename.split('.')[-1].lower() if '.' in filename else 'unknown'
+            file_types[ext] = file_types.get(ext, 0) + 1
+            total_size += doc.get('file_size', 0)
+        
+        return {
+            "total_documents": len(docs),
+            "knowledge_bases": kb_count,
+            "file_types": file_types,
+            "total_size_bytes": total_size,
+            "total_size_mb": round(total_size / (1024 * 1024), 2)
+        }
+    
     def upload_to_openwebui(self, file_path: str, category: str) -> Dict[str, Any]:
         """Upload file to Open WebUI and add to category-based knowledge base"""
         # Normalize category name for knowledge base
@@ -344,22 +484,37 @@ class RAGSystem:
     
     def list_uploaded_documents(self) -> List[Dict[str, Any]]:
         """List all uploaded documents from Open WebUI knowledge bases"""
-        url = f"{self.openwebui_base_url}/api/v1/knowledge"
+        if not self.openwebui_api_key:
+            return []
+        
+        url = f"{self.openwebui_base_url}/api/v1/knowledge/list"
         headers = {"Authorization": f"Bearer {self.openwebui_api_key}"}
         
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
+        try:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+            
+            if not response.text.strip():
+                return []
+            
+            knowledge_bases = response.json()
+        except ValueError as e:
+            raise Exception(f"Invalid JSON response from Open WebUI: {e}")
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Failed to connect to Open WebUI: {e}")
         
         all_docs = []
-        for kb in response.json():
-            kb_files_url = f"{self.openwebui_base_url}/api/v1/knowledge/{kb['id']}/file"
-            files_response = requests.get(kb_files_url, headers=headers)
-            if files_response.status_code == 200:
-                for file_info in files_response.json():
-                    all_docs.append({
-                        'filename': file_info.get('filename', 'Unknown'),
-                        'knowledge_base': kb['name'],
-                        'upload_time': file_info.get('created_at', 'Unknown'),
-                        'file_id': file_info.get('id', 'Unknown')
-                    })
-        return all_docs
+        for kb in knowledge_bases:
+            files = kb.get('files', [])
+            for file_info in files:
+                meta = file_info.get('meta', {})
+                all_docs.append({
+                    'filename': meta.get('name', file_info.get('name', 'Unknown')),
+                    'knowledge_base': kb.get('name', 'Unknown'),
+                    'knowledge_base_id': kb.get('id', 'Unknown'),
+                    'upload_time': file_info.get('created_at', 'Unknown'),
+                    'file_id': file_info.get('id', 'Unknown'),
+                    'file_size': meta.get('size', file_info.get('size', 0))
+                })
+        
+        return sorted(all_docs, key=lambda x: x.get('upload_time', ''), reverse=True)

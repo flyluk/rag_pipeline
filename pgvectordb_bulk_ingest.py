@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 import os
 import sys
-import json
-import re
 import time
 from pathlib import Path
 from typing import List, Dict
 from collections import defaultdict
-from langchain_community.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader
-from langchain_ollama import OllamaEmbeddings, OllamaLLM
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_ollama import OllamaEmbeddings
+from langchain.text_splitter import TokenTextSplitter
 from langchain_postgres import PGVector
+from rag_system import RAGSystem
 
 class PostgresBulkIngest:
     def __init__(self, 
@@ -22,10 +20,10 @@ class PostgresBulkIngest:
         self.collection_name = collection_name
         self.connection_string = connection_string
         self.embeddings = OllamaEmbeddings(model=embedding_model)
-        self.llm = OllamaLLM(model=llm_model, temperature=0.1)
-        self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=1000,
-            chunk_overlap=200
+        self.rag_system = RAGSystem(model_name=llm_model)
+        self.text_splitter = TokenTextSplitter(
+            chunk_size=512,
+            chunk_overlap=50
         )
         self.failed_files = []
         
@@ -36,60 +34,11 @@ class PostgresBulkIngest:
             connection=connection_string
         )
     
-    def load_document(self, file_path: str):
-        """Load document based on file extension"""
-        ext = Path(file_path).suffix.lower()
-        
-        if ext == '.pdf':
-            return PyPDFLoader(file_path).load()
-        elif ext == '.docx':
-            return Docx2txtLoader(file_path).load()
-        elif ext == '.txt':
-            return TextLoader(file_path, encoding='utf-8').load()
-        else:
-            raise ValueError(f"Unsupported file type: {ext}")
-    
-    def find_documents(self, path: str) -> List[str]:
-        """Find all supported documents in path"""
-        supported_exts = {'.pdf', '.docx', '.txt'}
-        documents = []
-        
-        path_obj = Path(path)
-        if path_obj.is_file():
-            if path_obj.suffix.lower() in supported_exts:
-                documents.append(str(path_obj))
-        else:
-            for file_path in path_obj.rglob('*'):
-                if file_path.suffix.lower() in supported_exts:
-                    documents.append(str(file_path))
-        
-        return documents
-    
-    def extract_metadata(self, docs) -> Dict[str, str]:
-        """Extract category and tags using LLM"""
-        content = "\n".join([doc.page_content for doc in docs[:3]])[:4000]
-        
-        prompt = f"""Analyze this document and return JSON with category and topics:
-{{
-    "category": "main category",
-    "topics": ["topic1", "topic2"],
-    "sentiment": "positive/negative/neutral",
-    "language": "language"
-}}
 
-Document: {content}
+    
 
-JSON:"""
-        
-        try:
-            response = self.llm.invoke(prompt)
-            json_match = re.search(r'\{.*\}', response, re.DOTALL)
-            if json_match:
-                return json.loads(json_match.group())
-        except:
-            pass
-        
-        return {"category": "General", "topics": ["General"], "sentiment": "neutral", "language": "English"}
+    
+
     
     def file_exists_in_db(self, file_path: str) -> bool:
         """Check if file already exists in vector database"""
@@ -124,8 +73,8 @@ JSON:"""
                 
                 print(f"[{i}/{len(documents)}] Processing: {Path(doc_path).name}")
                 
-                # Load and split document
-                docs = self.load_document(doc_path)
+                # Load and split document using RAGSystem
+                docs = self.rag_system.load_document(doc_path)
                 
                 # Clean NUL characters from document content
                 for doc in docs:
@@ -138,8 +87,14 @@ JSON:"""
                     print(f"Skipping: ⚠ No content chunks generated for {Path(doc_path).name}")
                     continue
                 
-                # Extract AI metadata
-                ai_metadata = self.extract_metadata(docs)
+                # Extract AI metadata using RAGSystem with already loaded documents
+                tags = self.rag_system.categorize_and_tag_document(doc_path, docs)
+                ai_metadata = {
+                    'category': tags.category,
+                    'topics': tags.topics,
+                    'sentiment': tags.sentiment,
+                    'language': tags.language
+                }
                 
                 # Add metadata
                 for chunk in chunks:
@@ -203,8 +158,102 @@ JSON:"""
             
             conn.close()
             return dict(files_by_category)
-        except:
+        except Exception as e:
+            print(f"Error querying database: {e}")
             return {}
+    
+    def list_uploaded_documents(self) -> List[Dict[str, str]]:
+        """Get detailed list of all uploaded documents from PostgreSQL"""
+        try:
+            import psycopg2
+            conn = psycopg2.connect(self.connection_string)
+            
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT DISTINCT 
+                        cmetadata->>'filename' as filename,
+                        cmetadata->>'source' as source_path,
+                        cmetadata->>'category' as category,
+                        cmetadata->>'topics' as topics,
+                        cmetadata->>'sentiment' as sentiment,
+                        cmetadata->>'language' as language,
+                        COUNT(*) as chunk_count
+                    FROM langchain_pg_embedding 
+                    WHERE cmetadata->>'filename' IS NOT NULL
+                    GROUP BY 
+                        cmetadata->>'filename',
+                        cmetadata->>'source',
+                        cmetadata->>'category',
+                        cmetadata->>'topics',
+                        cmetadata->>'sentiment',
+                        cmetadata->>'language'
+                    ORDER BY cmetadata->>'filename'
+                """)
+                
+                docs = []
+                for row in cur.fetchall():
+                    filename, source_path, category, topics, sentiment, language, chunk_count = row
+                    docs.append({
+                        'filename': filename or 'Unknown',
+                        'source_path': source_path or 'Unknown',
+                        'category': category or 'Unknown',
+                        'topics': topics or 'Unknown',
+                        'sentiment': sentiment or 'Unknown',
+                        'language': language or 'Unknown',
+                        'chunk_count': chunk_count or 0
+                    })
+            
+            conn.close()
+            return docs
+        except Exception as e:
+            print(f"Error querying PostgreSQL: {e}")
+            return []
+    
+    def get_database_stats(self) -> Dict[str, int]:
+        """Get statistics about the PostgreSQL database"""
+        try:
+            import psycopg2
+            conn = psycopg2.connect(self.connection_string)
+            
+            with conn.cursor() as cur:
+                # Total chunks
+                cur.execute("SELECT COUNT(*) FROM langchain_pg_embedding")
+                total_chunks = cur.fetchone()[0]
+                
+                # Unique documents
+                cur.execute("""
+                    SELECT COUNT(DISTINCT cmetadata->>'filename') 
+                    FROM langchain_pg_embedding 
+                    WHERE cmetadata->>'filename' IS NOT NULL
+                """)
+                unique_docs = cur.fetchone()[0]
+                
+                # Categories
+                cur.execute("""
+                    SELECT COUNT(DISTINCT cmetadata->>'category') 
+                    FROM langchain_pg_embedding 
+                    WHERE cmetadata->>'category' IS NOT NULL
+                """)
+                categories = cur.fetchone()[0]
+                
+                # Languages
+                cur.execute("""
+                    SELECT COUNT(DISTINCT cmetadata->>'language') 
+                    FROM langchain_pg_embedding 
+                    WHERE cmetadata->>'language' IS NOT NULL
+                """)
+                languages = cur.fetchone()[0]
+            
+            conn.close()
+            return {
+                'total_chunks': total_chunks,
+                'unique_documents': unique_docs,
+                'categories': categories,
+                'languages': languages
+            }
+        except Exception as e:
+            print(f"Error getting database stats: {e}")
+            return {'total_chunks': 0, 'unique_documents': 0, 'categories': 0, 'languages': 0}
     
     def save_failed_files(self):
         """Save failed files to text file"""
@@ -250,7 +299,7 @@ JSON:"""
                     print("Removed failed_files.txt after reprocessing")
                 self.failed_files = []
         
-        documents = self.find_documents(path)
+        documents = self.rag_system.find_documents(path)
         print(f"Found {len(documents)} documents")
         
         if not documents:
@@ -277,7 +326,7 @@ JSON:"""
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python postgres_bulk_ingest.py <file_or_directory_path>")
+        print("Usage: python pgvectordb_bulk_ingest.py <file_or_directory_path>")
         sys.exit(1)
     
     path = sys.argv[1]
