@@ -24,7 +24,9 @@ services:
     networks:
       - deepseek
     hostname: open-webui
-    restart: unless-stopped   
+    restart: unless-stopped
+    profiles:
+      - ${ENABLE_OPENWEBUI:-enabled}   
 
   ollama:
     image: ollama/ollama:latest
@@ -44,7 +46,9 @@ services:
           devices:
             - driver: nvidia
               count: 1
-              capabilities: [gpu]    
+              capabilities: [gpu]
+    profiles:
+      - ${ENABLE_OLLAMA:-enabled}    
 
   postgres:
     image: pgvector/pgvector:pg16
@@ -61,6 +65,8 @@ services:
       - deepseek
     hostname: postgres
     restart: unless-stopped
+    profiles:
+      - ${ENABLE_POSTGRES:-disabled}
 
   docling:
     image: ghcr.io/docling-project/docling-serve-cu128
@@ -88,6 +94,8 @@ services:
       - deepseek
     hostname: docling
     restart: unless-stopped
+    profiles:
+      - ${ENABLE_DOCLING:-disabled}
 
   vllm:
     image: vllm/vllm-openai:latest
@@ -109,32 +117,36 @@ services:
       - deepseek
     hostname: vllm
     restart: unless-stopped
+    profiles:
+      - ${ENABLE_VLLM:-disabled}
 
-  # development:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.dev   # Ensure you have a Dockerfile.dev at the root of your project.
-  #   volumes:
-  #     - .:/workspace   # Mounts your working directory inside the container.
-  #     - /mnt/c/Users/flyluk/Downloads:/workfiles
-  #     - /home/fly/development:/development
+  development:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev   # Ensure you have a Dockerfile.dev at the root of your project.
+    volumes:
+      - .:/workspace   # Mounts your working directory inside the container.
+      - /mnt/c/Users/flyluk/Downloads:/workfiles
+      - /home/fly/development:/development
 
-  #   ports:
-  #     - "8000:8000"   # Adjust or add additional ports as needed.
-  #   environment:
-  #     - ENV=development
-  #     - DATABASE_URL=postgresql://raguser:ragpassword@postgres:5432/vectordb
-  #     - DOCLING_URL=http://docling:5001
-  #     - OPENWEBUI_URL=http://open-webui:8080
-  #     - OLLAMA_API_URL=http://ollama:11434
+    ports:
+      - "8000:8000"   # Adjust or add additional ports as needed.
+    environment:
+      - ENV=development
+      - DATABASE_URL=postgresql://raguser:ragpassword@postgres:5432/vectordb
+      - DOCLING_URL=http://docling:5001
+      - OPENWEBUI_URL=http://open-webui:8080
+      - OLLAMA_API_URL=http://ollama:11434
            
-  #   networks:
-  #     - deepseek
-  #   hostname: development
-  #   restart: unless-stopped
-  #   depends_on:
-  #     - postgres
-  #     - docling
+    networks:
+      - deepseek
+    hostname: development
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - docling
+    profiles:
+      - ${ENABLE_DEVELOPMENT:-disabled}
 networks:
   deepseek:
     driver: bridge
