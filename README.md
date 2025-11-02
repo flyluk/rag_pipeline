@@ -16,7 +16,15 @@ AI-powered document processing pipeline with PostgreSQL/pgvector storage and Ope
 ### Docker Setup (Recommended)
 
 ```bash
-# Start all services
+# Start default services (Open WebUI + Ollama)
+docker-compose up -d
+
+# Start with specific services
+ENABLE_POSTGRES=enabled ENABLE_DOCLING=enabled docker-compose up -d
+
+# Or use .env file
+echo "ENABLE_POSTGRES=enabled" >> .env
+echo "ENABLE_DOCLING=enabled" >> .env
 docker-compose up -d
 
 # Setup database (first time)
@@ -67,11 +75,24 @@ streamlit run streamlit_app.py
 ## Configuration
 
 ### Environment Variables
+
+**Service Control:**
+```bash
+ENABLE_OPENWEBUI=enabled    # Default: enabled
+ENABLE_OLLAMA=enabled       # Default: enabled
+ENABLE_POSTGRES=enabled     # Default: disabled
+ENABLE_DOCLING=enabled      # Default: disabled
+ENABLE_VLLM=enabled         # Default: disabled
+ENABLE_DEVELOPMENT=enabled  # Default: disabled
+```
+
+**Application:**
 ```bash
 DATABASE_URL=postgresql://raguser:ragpassword@postgres:5432/vectordb
 DOCLING_URL=http://docling:5001
 OPENWEBUI_URL=http://open-webui:8080
 OLLAMA_API_URL=http://ollama:11434
+HF_TOKEN=your_huggingface_token  # For vLLM service
 ```
 
 ### Default Models
